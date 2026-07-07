@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Walking Cat</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #cfe9ff 0%, #eef8ff 55%, #d8ecc9 100%);
+    font-family: sans-serif;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+
+  .ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 14%;
+    background: #cfe2b8;
+    border-top: 3px solid #b7cf9e;
+  }
+
+  .caption {
+    position: absolute;
+    top: 24px;
+    width: 100%;
+    text-align: center;
+    color: #555;
+    font-size: 16px;
+  }
+
+  /* handles left/right movement across the stage + direction flip */
+  .walker {
+    position: absolute;
+    bottom: 13%;
+    width: 190px;
+    height: 190px;
+    left: 5%;
+    transform-origin: center;
+    animation: walk 9s linear infinite;
+  }
+
+  @keyframes walk {
+    0%   { left: 4%;  transform: scaleX(1); }
+    45%  { left: 74%; transform: scaleX(1); }
+    50%  { left: 74%; transform: scaleX(-1); }
+    95%  { left: 4%;  transform: scaleX(-1); }
+    100% { left: 4%;  transform: scaleX(1); }
+  }
+
+  /* handles the up/down walking bounce, independent of the flip/translate above */
+  .bobber {
+    width: 100%;
+    height: 100%;
+    animation: bob 0.55s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-7px); }
+  }
+
+  .cat-svg { width: 100%; height: 100%; display: block; }
+
+  /* leg swing, inside the svg */
+  .leg-left  { transform-origin: 215px 335px; animation: swing 0.55s ease-in-out infinite; }
+  .leg-right { transform-origin: 285px 335px; animation: swing 0.55s ease-in-out infinite reverse; }
+  @keyframes swing {
+    0%, 100% { transform: rotate(-10deg); }
+    50%      { transform: rotate(10deg); }
+  }
+
+  /* tail sway */
+  .tail { transform-origin: 150px 385px; animation: sway 0.55s ease-in-out infinite; }
+  @keyframes sway {
+    0%, 100% { transform: rotate(4deg); }
+    50%      { transform: rotate(-4deg); }
+  }
+
+  /* blink */
+  .eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blink 4.5s infinite;
+  }
+  .eye-right { animation-delay: 0.05s; }
+  @keyframes blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    93% { transform: scaleY(0.1); }
+    96% { transform: scaleY(1); }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="caption">My cat, walking back and forth 🐾</div>
+  <div class="ground"></div>
+
+  <div class="walker">
+    <div class="bobber">
+      <svg class="cat-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- tail -->
+        <g class="tail">
+          <path d="M 150 385
+                   C 90 385, 65 330, 90 290
+                   C 105 266, 135 262, 145 280
+                   C 153 295, 140 310, 122 305
+                   C 110 301, 108 288, 118 282"
+                fill="#f2a961" stroke="#231a14" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
+          <path d="M 118 300 C 128 296, 132 288, 128 280" stroke="#d9822f" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M 100 320 C 112 322, 122 315, 122 305" stroke="#d9822f" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </g>
+
+        <!-- whole silhouette: ears + head + body -->
+        <path d="M 148 85
+                 L 175 160
+                 C 152 200, 138 260, 145 310
+                 C 150 350, 150 385, 175 402
+                 C 200 415, 300 415, 325 402
+                 C 350 385, 350 350, 355 310
+                 C 362 260, 348 200, 325 160
+                 L 352 85
+                 L 300 138
+                 C 280 150, 220 150, 200 138
+                 Z"
+              fill="#f2a961" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
+
+        <!-- inner ears -->
+        <path d="M 184 152 L 165 108 L 213 140 Z" fill="#ffc9c9"/>
+        <path d="M 316 152 L 335 108 L 287 140 Z" fill="#ffc9c9"/>
+
+        <!-- chest -->
+        <ellipse cx="250" cy="345" rx="52" ry="58" fill="#fbe9c9"/>
+
+        <!-- stripes -->
+        <path d="M 214 145 Q 222 160 216 176" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 250 138 Q 250 155 250 173" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 286 145 Q 278 160 284 176" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 160 300 Q 176 312 164 330" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 340 300 Q 324 312 336 330" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+        <!-- legs -->
+        <path class="leg-left"  d="M 215 335 C 213 360, 213 382, 218 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path class="leg-right" d="M 285 335 C 287 360, 287 382, 282 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 204 398 Q 218 407 232 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 268 398 Q 282 407 296 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+        <!-- eyes -->
+        <g class="eye eye-left">
+          <ellipse cx="218" cy="228" rx="11" ry="13" fill="#231a14"/>
+        </g>
+        <g class="eye eye-right">
+          <ellipse cx="282" cy="228" rx="11" ry="13" fill="#231a14"/>
+        </g>
+
+        <!-- nose + mouth -->
+        <ellipse cx="250" cy="254" rx="7" ry="5" fill="#231a14"/>
+        <path d="M 250 259 L 250 266" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 250 266 Q 238 270 232 262" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M 250 266 Q 262 270 268 262" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+        <!-- whiskers -->
+        <line x1="150" y1="236" x2="178" y2="240" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
+        <line x1="148" y1="250" x2="177" y2="250" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
+        <line x1="350" y1="236" x2="322" y2="240" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
+        <line x1="352" y1="250" x2="323" y2="250" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
+
+      </svg>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
