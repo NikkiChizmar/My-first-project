@@ -8,62 +8,99 @@
       <stop offset="60%" stop-color="#eaf6ff"/>
       <stop offset="100%" stop-color="#dff0d8"/>
     </linearGradient>
+    <radialGradient id="bodyShade" cx="40%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffb673"/>
+      <stop offset="100%" stop-color="#ee9c4f"/>
+    </radialGradient>
+    <radialGradient id="headShade" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#ffb673"/>
+      <stop offset="100%" stop-color="#ee9c4f"/>
+    </radialGradient>
   </defs>
 
   <!-- shadow -->
-  <ellipse cx="250" cy="430" rx="120" ry="18" fill="#000" opacity="0.1"/>
+  <ellipse cx="250" cy="440" rx="130" ry="16" fill="#000" opacity="0.1"/>
 
-  <!-- tail -->
-  <path d="M 350 340 C 430 330, 450 250, 400 190" stroke="#e08a3c" stroke-width="34" fill="none" stroke-linecap="round"/>
-  <path d="M 350 340 C 430 330, 450 250, 400 190" stroke="#ffffff" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="18 22"/>
+  <!-- curled tail (wraps around body) -->
+  <path d="M 365 370 C 450 360, 460 270, 400 235 C 365 214, 345 245, 370 265 C 390 282, 415 270, 410 245"
+        stroke="#ee9c4f" stroke-width="36" fill="none" stroke-linecap="round"/>
+  <path d="M 365 370 C 450 360, 460 270, 400 235 C 365 214, 345 245, 370 265 C 390 282, 415 270, 410 245"
+        stroke="#ffffff" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="16 24"/>
 
-  <!-- body -->
-  <ellipse cx="250" cy="330" rx="115" ry="95" fill="#f2a45c"/>
-  <ellipse cx="250" cy="360" rx="70" ry="55" fill="#ffffff"/>
+  <!-- body (small + round, chibi style) -->
+  <ellipse cx="250" cy="360" rx="100" ry="80" fill="url(#bodyShade)"/>
+  <ellipse cx="250" cy="385" rx="62" ry="48" fill="#ffffff"/>
 
-  <!-- front paws -->
-  <ellipse cx="205" cy="415" rx="24" ry="18" fill="#ffffff"/>
-  <ellipse cx="295" cy="415" rx="24" ry="18" fill="#ffffff"/>
+  <!-- tucked front paws -->
+  <ellipse cx="205" cy="418" rx="26" ry="20" fill="#ffffff"/>
+  <ellipse cx="295" cy="418" rx="26" ry="20" fill="#ffffff"/>
+  <path d="M 190 415 Q 205 425 220 415" stroke="#f0c9a0" stroke-width="2" fill="none"/>
+  <path d="M 280 415 Q 295 425 310 415" stroke="#f0c9a0" stroke-width="2" fill="none"/>
 
-  <!-- head -->
-  <circle cx="250" cy="200" r="95" fill="#f2a45c"/>
+  <!-- big chibi head -->
+  <circle cx="250" cy="205" r="115" fill="url(#headShade)"/>
 
-  <!-- ears -->
-  <path d="M 175 150 L 150 70 L 225 130 Z" fill="#f2a45c"/>
-  <path d="M 325 150 L 350 70 L 275 130 Z" fill="#f2a45c"/>
-  <path d="M 182 140 L 165 90 L 215 128 Z" fill="#f9c7a0"/>
-  <path d="M 318 140 L 335 90 L 285 128 Z" fill="#f9c7a0"/>
+  <!-- ears: left orange, right white-tipped -->
+  <path d="M 155 165 L 118 65 L 218 130 Z" fill="#ee9c4f"/>
+  <path d="M 345 165 L 382 65 L 282 130 Z" fill="#ffffff"/>
+  <path d="M 163 152 L 140 88 L 205 128 Z" fill="#ffc9a3"/>
+  <path d="M 337 152 L 360 88 L 295 128 Z" fill="#ffd9d9"/>
 
-  <!-- white face patch -->
-  <ellipse cx="250" cy="230" rx="65" ry="55" fill="#ffffff"/>
+  <!-- white face base -->
+  <ellipse cx="250" cy="245" rx="90" ry="75" fill="#ffffff"/>
 
-  <!-- tabby stripes on head -->
-  <path d="M 200 115 Q 210 130 205 150" stroke="#d97f3d" stroke-width="8" fill="none" stroke-linecap="round"/>
-  <path d="M 230 105 Q 238 122 233 145" stroke="#d97f3d" stroke-width="8" fill="none" stroke-linecap="round"/>
-  <path d="M 300 115 Q 290 130 295 150" stroke="#d97f3d" stroke-width="8" fill="none" stroke-linecap="round"/>
-  <path d="M 270 105 Q 262 122 267 145" stroke="#d97f3d" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- orange mask patch over right side of face (cat's left eye), asymmetric like reference -->
+  <path d="M 250 140
+           C 210 140, 175 165, 168 210
+           C 163 245, 178 280, 210 295
+           C 225 300, 240 290, 245 270
+           C 250 240, 245 190, 250 140 Z"
+        fill="url(#headShade)"/>
+
+  <!-- small orange patch above left eye for asymmetry -->
+  <path d="M 300 155 C 320 165, 328 190, 318 210 C 310 195, 300 178, 292 165 Z" fill="#ee9c4f"/>
+
+  <!-- tabby stripes on orange mask -->
+  <path d="M 190 165 Q 198 180 192 198" stroke="#d97f3d" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M 205 150 Q 213 165 207 185" stroke="#d97f3d" stroke-width="7" fill="none" stroke-linecap="round"/>
 
   <!-- stripes on body -->
-  <path d="M 165 290 Q 180 300 168 320" stroke="#d97f3d" stroke-width="8" fill="none" stroke-linecap="round"/>
-  <path d="M 335 290 Q 320 300 332 320" stroke="#d97f3d" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 155 330 Q 172 342 158 362" stroke="#d97f3d" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M 345 330 Q 328 342 342 362" stroke="#d97f3d" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M 190 400 Q 205 408 195 420" stroke="#d97f3d" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M 310 400 Q 295 408 305 420" stroke="#d97f3d" stroke-width="7" fill="none" stroke-linecap="round"/>
 
-  <!-- eyes -->
-  <ellipse cx="220" cy="205" rx="12" ry="16" fill="#3c2a1e"/>
-  <ellipse cx="280" cy="205" rx="12" ry="16" fill="#3c2a1e"/>
-  <circle cx="223" cy="200" r="3" fill="#fff"/>
-  <circle cx="283" cy="200" r="3" fill="#fff"/>
+  <!-- blush cheeks -->
+  <ellipse cx="185" cy="270" rx="16" ry="10" fill="#ffb0b0" opacity="0.6"/>
+  <ellipse cx="315" cy="270" rx="16" ry="10" fill="#ffb0b0" opacity="0.6"/>
 
-  <!-- nose -->
-  <path d="M 242 230 L 258 230 L 250 240 Z" fill="#e08a8a"/>
+  <!-- big green eyes -->
+  <ellipse cx="212" cy="240" rx="20" ry="25" fill="#2b1d14"/>
+  <ellipse cx="288" cy="240" rx="20" ry="25" fill="#2b1d14"/>
+  <ellipse cx="212" cy="244" rx="14" ry="17" fill="#9bc46b"/>
+  <ellipse cx="288" cy="244" rx="14" ry="17" fill="#9bc46b"/>
+  <ellipse cx="212" cy="244" rx="6" ry="14" fill="#3c4a1e"/>
+  <ellipse cx="288" cy="244" rx="6" ry="14" fill="#3c4a1e"/>
+  <circle cx="219" cy="229" r="6" fill="#ffffff"/>
+  <circle cx="295" cy="229" r="6" fill="#ffffff"/>
+  <circle cx="207" cy="249" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="283" cy="249" r="3" fill="#ffffff" opacity="0.8"/>
 
-  <!-- mouth -->
-  <path d="M 250 240 Q 250 248 238 250" stroke="#3c2a1e" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M 250 240 Q 250 248 262 250" stroke="#3c2a1e" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- eyebrow lines -->
+  <path d="M 196 214 Q 212 204 228 212" stroke="#2b1d14" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 272 212 Q 288 204 304 214" stroke="#2b1d14" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- pink nose -->
+  <path d="M 240 267 L 260 267 L 250 278 Z" fill="#f28ba0"/>
+
+  <!-- sweet smile -->
+  <path d="M 250 278 Q 250 288 234 290" stroke="#2b1d14" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M 250 278 Q 250 288 266 290" stroke="#2b1d14" stroke-width="3" fill="none" stroke-linecap="round"/>
 
   <!-- whiskers -->
-  <line x1="150" y1="215" x2="200" y2="220" stroke="#555" stroke-width="2"/>
-  <line x1="150" y1="230" x2="200" y2="230" stroke="#555" stroke-width="2"/>
-  <line x1="350" y1="215" x2="300" y2="220" stroke="#555" stroke-width="2"/>
-  <line x1="350" y1="230" x2="300" y2="230" stroke="#555" stroke-width="2"/>
+  <line x1="125" y1="250" x2="182" y2="255" stroke="#888" stroke-width="2"/>
+  <line x1="123" y1="267" x2="181" y2="265" stroke="#888" stroke-width="2"/>
+  <line x1="375" y1="250" x2="318" y2="255" stroke="#888" stroke-width="2"/>
+  <line x1="377" y1="267" x2="319" y2="265" stroke="#888" stroke-width="2"/>
 
 </svg>
