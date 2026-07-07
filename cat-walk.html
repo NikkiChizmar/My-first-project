@@ -42,17 +42,18 @@
     bottom: 14%;
     width: 260px;
     height: 185px;
-    left: 5%;
+    left: 4%;
     transform-origin: center;
-    animation: walk 9s linear infinite;
   }
 
-  @keyframes walk {
-    0%   { left: 4%;  transform: scaleX(1); }
-    45%  { left: 68%; transform: scaleX(1); }
-    50%  { left: 68%; transform: scaleX(-1); }
-    95%  { left: 4%;  transform: scaleX(-1); }
-    100% { left: 4%;  transform: scaleX(1); }
+  .bowl {
+    position: absolute;
+    bottom: 13%;
+    width: 50px;
+    height: 35px;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 3;
   }
 
   .bobber {
@@ -64,6 +65,32 @@
   @keyframes bob {
     0%, 100% { transform: translateY(0); }
     50%      { transform: translateY(-6px); }
+  }
+
+  .bobber.eating {
+    animation: eat 0.5s ease-in-out infinite;
+  }
+
+  @keyframes eat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(10px); }
+  }
+
+  .chew-mouth {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+  }
+  .cat-svg.eating .closed-mouth {
+    opacity: 0;
+  }
+  .cat-svg.eating .chew-mouth {
+    opacity: 1;
+    animation: chew 0.35s ease-in-out infinite;
+  }
+  @keyframes chew {
+    0%, 100% { transform: scaleY(0.2); }
+    50%      { transform: scaleY(1); }
   }
 
   .cat-svg { width: 100%; height: 100%; display: block; }
@@ -78,11 +105,305 @@
     93% { transform: scaleY(0.1); }
     96% { transform: scaleY(1); }
   }
+
+  .walker { cursor: pointer; }
+
+  .speech-bubble {
+    position: absolute;
+    background: #fff;
+    color: #333;
+    padding: 8px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .speech-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #fff;
+  }
+  .speech-bubble.show {
+    opacity: 1;
+  }
+
+  .sky-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 75%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .critter {
+    position: absolute;
+    left: -10%;
+    animation: fly-across 8s linear forwards;
+  }
+  .critter.reverse {
+    animation-name: fly-across-reverse;
+    transform: scaleX(-1);
+  }
+
+  @keyframes fly-across {
+    from { left: -10%; }
+    to   { left: 110%; }
+  }
+  @keyframes fly-across-reverse {
+    from { left: 110%; }
+    to   { left: -10%; }
+  }
+
+  .wing-flap {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: flap 0.3s ease-in-out infinite;
+  }
+  @keyframes flap {
+    0%, 100% { transform: scaleX(1); }
+    50%      { transform: scaleX(0.6); }
+  }
 </style>
 </head>
 <body>
 
 <div class="stage">
+  <div class="sky-layer" id="skyLayer"></div>
+  <div class="caption">My cat, walking back and forth 🐾</div>
+  <div class="ground"></div>
+
+  <div class="walker">
+    <div class="bobber">
+      <svg class="cat-svg" viewBox="0 0 460 320" xmlns="http://www.w3.org/2000/svg">
+
+        <defs>
+          <filter id="soften" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6"/>
+          </filter>
+        </defs>
+
+        <!-- ground shadow -->
+        <ellipse cx="220" cy="308" rx="150" ry="8" fill="#000" opacity="0.10"/>
+
+        <!-- tail -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            values="8 90 210; -6 90 210; 8 90 210" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 90 210 C 55 200, 30 165, 45 130 C 55 105, 80 100, 85 120 C 88 135, 70 138, 62 125"
+                fill="none" stroke="#231a14" stroke-width="20" stroke-linecap="round"/>
+          <path d="M 90 210 C 55 200, 30 165, 45 130 C 55 105, 80 100, 85 120 C 88 135, 70 138, 62 125"
+                fill="none" stroke="#e8944e" stroke-width="13" stroke-linecap="round"/>
+        </g>
+
+        <!-- back-far leg -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            values="-16 115 250; 16 115 250; -16 115 250" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 115 250 C 112 268, 110 285, 113 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
+          <path d="M 115 250 C 112 268, 110 285, 113 300" stroke="#d97f3d" stroke-width="18" fill="none" stroke-linecap="round"/>
+        </g>
+        <!-- front-far leg -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            values="-16 250 250; 16 250 250; -16 250 250" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 250 250 C 247 268, 245 285, 248 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
+          <path d="M 250 250 C 247 268, 245 285, 248 300" stroke="#d97f3d"
+cat > cat-walk.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Walking Cat</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #cfe9ff 0%, #eef8ff 55%, #d8ecc9 100%);
+    font-family: sans-serif;
+  }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+
+  .ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 14%;
+    background: #cfe2b8;
+    border-top: 3px solid #b7cf9e;
+  }
+
+  .caption {
+    position: absolute;
+    top: 24px;
+    width: 100%;
+    text-align: center;
+    color: #555;
+    font-size: 16px;
+  }
+
+  .walker {
+    position: absolute;
+    bottom: 14%;
+    width: 260px;
+    height: 185px;
+    left: 4%;
+    transform-origin: center;
+  }
+
+  .bowl {
+    position: absolute;
+    bottom: 13%;
+    width: 50px;
+    height: 35px;
+    transform: translateX(-50%);
+    display: none;
+    z-index: 3;
+  }
+
+  .bobber {
+    width: 100%;
+    height: 100%;
+    animation: bob 0.5s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-6px); }
+  }
+
+  .bobber.eating {
+    animation: eat 0.5s ease-in-out infinite;
+  }
+
+  @keyframes eat {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(10px); }
+  }
+
+  .chew-mouth {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+  }
+  .cat-svg.eating .closed-mouth {
+    opacity: 0;
+  }
+  .cat-svg.eating .chew-mouth {
+    opacity: 1;
+    animation: chew 0.35s ease-in-out infinite;
+  }
+  @keyframes chew {
+    0%, 100% { transform: scaleY(0.2); }
+    50%      { transform: scaleY(1); }
+  }
+
+  .cat-svg { width: 100%; height: 100%; display: block; }
+
+  .eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: blink 4.5s infinite;
+  }
+  @keyframes blink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    93% { transform: scaleY(0.1); }
+    96% { transform: scaleY(1); }
+  }
+
+  .walker { cursor: pointer; }
+
+  .speech-bubble {
+    position: absolute;
+    background: #fff;
+    color: #333;
+    padding: 8px 14px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+  }
+  .speech-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #fff;
+  }
+  .speech-bubble.show {
+    opacity: 1;
+  }
+
+  .sky-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 75%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .critter {
+    position: absolute;
+    left: -10%;
+    animation: fly-across 8s linear forwards;
+  }
+  .critter.reverse {
+    animation-name: fly-across-reverse;
+    transform: scaleX(-1);
+  }
+
+  @keyframes fly-across {
+    from { left: -10%; }
+    to   { left: 110%; }
+  }
+  @keyframes fly-across-reverse {
+    from { left: 110%; }
+    to   { left: -10%; }
+  }
+
+  .wing-flap {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: flap 0.3s ease-in-out infinite;
+  }
+  @keyframes flap {
+    0%, 100% { transform: scaleX(1); }
+    50%      { transform: scaleX(0.6); }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="sky-layer" id="skyLayer"></div>
   <div class="caption">My cat, walking back and forth 🐾</div>
   <div class="ground"></div>
 
@@ -156,10 +477,10 @@
         <circle cx="341" cy="143" r="65" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
 
         <!-- ears -->
-        <path d="M 303 101 L 314 57 L 339 95 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
-        <path d="M 310 106 L 318 75 L 332 101 Z" fill="#ffc9c9"/>
-        <path d="M 355 95 L 368 55 L 388 99 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
-        <path d="M 361 101 L 369 74 L 382 99 Z" fill="#ffc9c9"/>
+        <path d="M 291 105 L 295 54 L 326 81 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M 303 96 L 304 76 L 317 86 Z" fill="#ffc9c9"/>
+        <path d="M 391 105 L 387 54 L 356 81 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M 379 96 L 378 76 L 365 86 Z" fill="#ffc9c9"/>
 
         <!-- eyes -->
         <g class="eye">
@@ -174,8 +495,9 @@
 
         <!-- nose + mouth -->
         <path d="M 339 164 L 354 164 L 346 173 Z" fill="#231a14"/>
-        <path d="M 346 173 Q 339 182 330 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 346 173 Q 354 182 363 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path class="closed-mouth" d="M 346 173 Q 339 182 330 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path class="closed-mouth" d="M 346 173 Q 354 182 363 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <ellipse class="chew-mouth" cx="346" cy="178" rx="7" ry="5" fill="#3a2418"/>
 
         <!-- whiskers -->
         <line x1="314" y1="155" x2="282" y2="149" stroke="#7a7a7a" stroke-width="2.5"/>
@@ -186,7 +508,168 @@
       </svg>
     </div>
   </div>
+
+  <div class="bowl" id="bowl">
+    <svg viewBox="0 0 60 40" width="50" height="35">
+      <ellipse cx="30" cy="30" rx="26" ry="8" fill="#b0b0b0" stroke="#7a7a7a" stroke-width="2"/>
+      <ellipse cx="30" cy="24" rx="20" ry="10" fill="#8a5a2b"/>
+      <ellipse cx="30" cy="22" rx="16" ry="7" fill="#a9702f"/>
+    </svg>
+  </div>
+
+  <div class="speech-bubble" id="speechBubble">Hi! I'm Ollie Sharp</div>
+
 </div>
+
+<script>
+  const walker = document.querySelector('.walker');
+  const stage = document.querySelector('.stage');
+  const ground = document.querySelector('.ground');
+  const bubble = document.getElementById('speechBubble');
+  const bowl = document.getElementById('bowl');
+
+  // ---- speech bubble ----
+  let hideTimeout;
+  let bubbleAnimFrame;
+
+  function updateBubblePosition() {
+    const walkerRect = walker.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
+    const x = walkerRect.left - stageRect.left + walkerRect.width / 2;
+    const y = walkerRect.top - stageRect.top;
+
+    bubble.style.left = x + 'px';
+    bubble.style.top = y + 'px';
+
+    bubbleAnimFrame = requestAnimationFrame(updateBubblePosition);
+  }
+
+  walker.addEventListener('click', (e) => {
+    e.stopPropagation();
+    bubble.classList.add('show');
+    cancelAnimationFrame(bubbleAnimFrame);
+    updateBubblePosition();
+
+    clearTimeout(hideTimeout);
+    hideTimeout = setTimeout(() => {
+      bubble.classList.remove('show');
+      cancelAnimationFrame(bubbleAnimFrame);
+    }, 2250);
+  });
+
+  // ---- walking / bowl / eating ----
+  const CAT_WIDTH = 260;
+  const bobber = document.querySelector('.bobber');
+  const catSvg = document.querySelector('.cat-svg');
+
+  let posPx = 0;
+  let dir = 1;
+  let facing = 1;
+  let state = 'patrol'; // 'patrol' | 'toBowl' | 'eating'
+  let targetPx = null;
+  let lastTime = null;
+  let eatTimeout;
+  let minPx = 0;
+  let maxPx = 0;
+
+  function recalcBounds() {
+    const stageWidth = stage.getBoundingClientRect().width;
+    minPx = stageWidth * 0.04;
+    maxPx = stageWidth * 0.68;
+  }
+  recalcBounds();
+  window.addEventListener('resize', recalcBounds);
+
+  posPx = minPx;
+
+  const SPEED_PX = 90; // pixels per second
+
+  ground.addEventListener('click', (e) => {
+    const stageRect = stage.getBoundingClientRect();
+    const clickX = e.clientX - stageRect.left;
+    const clamped = Math.max(minPx, Math.min(maxPx, clickX));
+
+    bowl.style.left = clamped + 'px';
+    bowl.style.display = 'block';
+
+    targetPx = clamped;
+    state = 'toBowl';
+    bobber.classList.remove('eating');
+    catSvg.classList.remove('eating');
+    catSvg.unpauseAnimations();
+    clearTimeout(eatTimeout);
+  });
+
+  function frame(timestamp) {
+    if (lastTime === null) lastTime = timestamp;
+    const dt = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    if (state === 'patrol') {
+      posPx += dir * SPEED_PX * dt;
+      if (posPx >= maxPx) { posPx = maxPx; dir = -1; facing = -1; }
+      if (posPx <= minPx) { posPx = minPx; dir = 1; facing = 1; }
+    } else if (state === 'toBowl') {
+      const diff = targetPx - posPx;
+      facing = diff >= 0 ? 1 : -1;
+      const step = SPEED_PX * dt;
+
+      if (Math.abs(diff) <= step) {
+        posPx = targetPx;
+        state = 'eating';
+        bobber.classList.add('eating');
+        catSvg.classList.add('eating');
+        catSvg.pauseAnimations();
+        eatTimeout = setTimeout(() => {
+          bowl.style.display = 'none';
+          bobber.classList.remove('eating');
+          catSvg.classList.remove('eating');
+          catSvg.unpauseAnimations();
+          state = 'patrol';
+          dir = facing;
+        }, 3000);
+      } else {
+        posPx += facing * step;
+      }
+    }
+
+    walker.style.left = posPx + 'px';
+    walker.style.transform = 'scaleX(' + facing + ')';
+
+    requestAnimationFrame(frame);
+  }
+
+  requestAnimationFrame(frame);
+
+  // ---- sky critters ----
+  const skyLayer = document.getElementById('skyLayer');
+
+  const butterflyColors = ['#e07a9e', '#f2c94c', '#4caf6e', '#2b4d7a'];
+
+  function butterflySVG(color) {
+    return `
+      <svg viewBox="0 0 40 30" width="30" height="24">
+        <g class="wing-flap">
+          <ellipse cx="12" cy="12" rx="10" ry="7" fill="${color}"/>
+          <ellipse cx="28" cy="12" rx="10" ry="7" fill="${color}"/>
+        </g>
+        <line x1="20" y1="6" x2="20" y2="20" stroke="#3a2418" stroke-width="2"/>
+      </svg>`;
+  }
+
+  function spawnCritter() {
+    const color = butterflyColors[Math.floor(Math.random() * butterflyColors.length)];
+    const el = document.createElement('div');
+    el.className = 'critter ' + (Math.random() < 0.5 ? 'reverse' : '');
+    el.style.top = (35 + Math.random() * 30) + '%';
+    el.innerHTML = butterflySVG(color);
+    el.addEventListener('animationend', () => el.remove());
+    skyLayer.appendChild(el);
+  }
+
+  spawnCritter();
+  setInterval(spawnCritter, 15000);
+</script>
 
 </body>
 </html>
