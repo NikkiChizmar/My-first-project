@@ -40,9 +40,9 @@
   /* handles left/right movement across the stage + direction flip */
   .walker {
     position: absolute;
-    bottom: 13%;
-    width: 190px;
-    height: 190px;
+    bottom: 14%;
+    width: 260px;
+    height: 185px;
     left: 5%;
     transform-origin: center;
     animation: walk 9s linear infinite;
@@ -50,8 +50,8 @@
 
   @keyframes walk {
     0%   { left: 4%;  transform: scaleX(1); }
-    45%  { left: 74%; transform: scaleX(1); }
-    50%  { left: 74%; transform: scaleX(-1); }
+    45%  { left: 68%; transform: scaleX(1); }
+    50%  { left: 68%; transform: scaleX(-1); }
     95%  { left: 4%;  transform: scaleX(-1); }
     100% { left: 4%;  transform: scaleX(1); }
   }
@@ -60,30 +60,15 @@
   .bobber {
     width: 100%;
     height: 100%;
-    animation: bob 0.55s ease-in-out infinite;
+    animation: bob 0.5s ease-in-out infinite;
   }
 
   @keyframes bob {
     0%, 100% { transform: translateY(0); }
-    50%      { transform: translateY(-7px); }
+    50%      { transform: translateY(-6px); }
   }
 
   .cat-svg { width: 100%; height: 100%; display: block; }
-
-  /* leg swing, inside the svg */
-  .leg-left  { transform-origin: 215px 335px; animation: swing 0.55s ease-in-out infinite; }
-  .leg-right { transform-origin: 285px 335px; animation: swing 0.55s ease-in-out infinite reverse; }
-  @keyframes swing {
-    0%, 100% { transform: rotate(-10deg); }
-    50%      { transform: rotate(10deg); }
-  }
-
-  /* tail sway */
-  .tail { transform-origin: 150px 385px; animation: sway 0.55s ease-in-out infinite; }
-  @keyframes sway {
-    0%, 100% { transform: rotate(4deg); }
-    50%      { transform: rotate(-4deg); }
-  }
 
   /* blink */
   .eye {
@@ -91,7 +76,6 @@
     transform-origin: center;
     animation: blink 4.5s infinite;
   }
-  .eye-right { animation-delay: 0.05s; }
   @keyframes blink {
     0%, 90%, 100% { transform: scaleY(1); }
     93% { transform: scaleY(0.1); }
@@ -107,73 +91,93 @@
 
   <div class="walker">
     <div class="bobber">
-      <svg class="cat-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <svg class="cat-svg" viewBox="0 0 460 320" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- ground shadow -->
+        <ellipse cx="230" cy="308" rx="150" ry="8" fill="#000" opacity="0.10"/>
 
         <!-- tail -->
         <g class="tail">
-          <path d="M 150 385
-                   C 90 385, 65 330, 90 290
-                   C 105 266, 135 262, 145 280
-                   C 153 295, 140 310, 122 305
-                   C 110 301, 108 288, 118 282"
-                fill="#f2a961" stroke="#231a14" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
-          <path d="M 118 300 C 128 296, 132 288, 128 280" stroke="#d9822f" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <path d="M 100 320 C 112 322, 122 315, 122 305" stroke="#d9822f" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <animateTransform attributeName="transform" type="rotate"
+            values="6 95 195; -6 95 195; 6 95 195" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 95 195
+                   C 55 190, 25 160, 35 120
+                   C 40 100, 60 95, 65 112
+                   C 68 128, 52 135, 45 122"
+                fill="none" stroke="#231a14" stroke-width="7" stroke-linejoin="round" stroke-linecap="round"/>
         </g>
 
-        <!-- whole silhouette: ears + head + body -->
-        <path d="M 148 85
-                 L 175 160
-                 C 152 200, 138 260, 145 310
-                 C 150 350, 150 385, 175 402
-                 C 200 415, 300 415, 325 402
-                 C 350 385, 350 350, 355 310
-                 C 362 260, 348 200, 325 160
-                 L 352 85
-                 L 300 138
-                 C 280 150, 220 150, 200 138
-                 Z"
+        <!-- back-far leg (behind body, muted shade, outlined to match the cat) -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            values="-18 128 195; 18 128 195; -18 128 195" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 128 195 C 122 230, 118 270, 122 300" stroke="#231a14" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <path d="M 128 195 C 122 230, 118 270, 122 300" stroke="#d9822f" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <ellipse cx="122" cy="302" rx="11" ry="6" fill="#f3ddb9" stroke="#231a14" stroke-width="4"/>
+        </g>
+        <!-- front-far leg (behind body, muted shade, outlined to match the cat) -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            values="-18 332 195; 18 332 195; -18 332 195" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 332 195 C 326 230, 322 270, 326 300" stroke="#231a14" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <path d="M 332 195 C 326 230, 322 270, 326 300" stroke="#d9822f" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <ellipse cx="326" cy="302" rx="11" ry="6" fill="#f3ddb9" stroke="#231a14" stroke-width="4"/>
+        </g>
+
+        <!-- body + head + ears silhouette (one continuous outline) -->
+        <path d="M 85 235
+                 C 55 215, 50 168, 88 148
+                 C 115 133, 150 132, 180 136
+                 C 212 130, 232 124, 248 108
+                 C 262 95, 260 75, 240 60
+                 L 275 100
+                 L 300 55
+                 L 335 95
+                 C 355 105, 372 120, 378 145
+                 C 382 170, 368 178, 356 192
+                 C 346 204, 342 220, 345 235
+                 C 325 254, 265 258, 210 257
+                 C 155 258, 105 254, 85 235 Z"
               fill="#f2a961" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
 
         <!-- inner ears -->
-        <path d="M 184 152 L 165 108 L 213 140 Z" fill="#ffc9c9"/>
-        <path d="M 316 152 L 335 108 L 287 140 Z" fill="#ffc9c9"/>
+        <path d="M 246 78 L 240 60 L 262 88 Z" fill="#ffc9c9"/>
+        <path d="M 306 76 L 300 55 L 322 86 Z" fill="#ffc9c9"/>
 
-        <!-- chest -->
-        <ellipse cx="250" cy="345" rx="52" ry="58" fill="#fbe9c9"/>
+        <!-- back + head stripes -->
+        <path d="M 135 168 Q 150 160 168 165" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 195 152 Q 210 145 225 150" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 262 95 Q 270 108 262 122" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
 
-        <!-- stripes -->
-        <path d="M 214 145 Q 222 160 216 176" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 250 138 Q 250 155 250 173" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 286 145 Q 278 160 284 176" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 160 300 Q 176 312 164 330" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 340 300 Q 324 312 336 330" stroke="#d9822f" stroke-width="6" fill="none" stroke-linecap="round"/>
-
-        <!-- legs -->
-        <path class="leg-left"  d="M 215 335 C 213 360, 213 382, 218 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path class="leg-right" d="M 285 335 C 287 360, 287 382, 282 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 204 398 Q 218 407 232 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 268 398 Q 282 407 296 398" stroke="#231a14" stroke-width="6" fill="none" stroke-linecap="round"/>
-
-        <!-- eyes -->
-        <g class="eye eye-left">
-          <ellipse cx="218" cy="228" rx="11" ry="13" fill="#231a14"/>
+        <!-- front-near leg (on top, full color to match body) -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            values="18 340 195; -18 340 195; 18 340 195" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 340 195 C 346 230, 350 270, 346 300" stroke="#231a14" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <path d="M 340 195 C 346 230, 350 270, 346 300" stroke="#f2a961" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <ellipse cx="346" cy="302" rx="12" ry="7" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
         </g>
-        <g class="eye eye-right">
-          <ellipse cx="282" cy="228" rx="11" ry="13" fill="#231a14"/>
+        <!-- back-near leg (on top, full color to match body) -->
+        <g>
+          <animateTransform attributeName="transform" type="rotate"
+            values="18 136 195; -18 136 195; 18 136 195" dur="0.5s" repeatCount="indefinite"/>
+          <path d="M 136 195 C 142 230, 146 270, 142 300" stroke="#231a14" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <path d="M 136 195 C 142 230, 146 270, 142 300" stroke="#f2a961" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <ellipse cx="142" cy="302" rx="12" ry="7" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+        </g>
+
+        <!-- eye -->
+        <g class="eye">
+          <ellipse cx="345" cy="118" rx="10" ry="13" fill="#231a14"/>
         </g>
 
         <!-- nose + mouth -->
-        <ellipse cx="250" cy="254" rx="7" ry="5" fill="#231a14"/>
-        <path d="M 250 259 L 250 266" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 250 266 Q 238 270 232 262" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M 250 266 Q 262 270 268 262" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <ellipse cx="376" cy="142" rx="6" ry="5" fill="#231a14"/>
+        <path d="M 376 147 Q 368 156 358 150" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
 
         <!-- whiskers -->
-        <line x1="150" y1="236" x2="178" y2="240" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
-        <line x1="148" y1="250" x2="177" y2="250" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
-        <line x1="350" y1="236" x2="322" y2="240" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
-        <line x1="352" y1="250" x2="323" y2="250" stroke="#231a14" stroke-width="3" stroke-linecap="round"/>
+        <line x1="330" y1="130" x2="365" y2="122" stroke="#7a7a7a" stroke-width="2.5"/>
+        <line x1="330" y1="140" x2="366" y2="136" stroke="#7a7a7a" stroke-width="2.5"/>
 
       </svg>
     </div>
