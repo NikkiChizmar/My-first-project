@@ -39,21 +39,54 @@
 
   .walker {
     position: absolute;
-    bottom: 14%;
-    width: 260px;
-    height: 185px;
+    bottom: calc(14% - 11px);
+    width: 294px;
+    height: 258px;
     left: 4%;
     transform-origin: center;
   }
 
-  .bowl {
+  .bowl, .post, .yarn {
     position: absolute;
     bottom: 13%;
-    width: 50px;
-    height: 35px;
     transform: translateX(-50%);
     display: none;
     z-index: 3;
+  }
+  .bowl { width: 50px; height: 35px; }
+  .post { width: 95px; height: 145px; }
+  .yarn { width: 38px; height: 38px; }
+
+  .click-menu {
+    position: absolute;
+    bottom: 16%;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+    padding: 8px;
+    display: none;
+    flex-direction: row;
+    gap: 4px;
+    transform: translateX(-50%);
+    z-index: 20;
+  }
+  .click-menu.show { display: flex; }
+  .menu-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    color: #555;
+    font-family: sans-serif;
+  }
+  .menu-btn:hover {
+    background: #f2f2f2;
   }
 
   .bobber {
@@ -93,7 +126,46 @@
     50%      { transform: scaleY(1); }
   }
 
+  .bobber.scratching {
+    animation: scratch 0.3s ease-in-out infinite;
+  }
+  @keyframes scratch {
+    0%, 100% { transform: translateX(0) rotate(0deg); }
+    25%      { transform: translateX(7px) rotate(-3deg); }
+    50%      { transform: translateX(0) rotate(0deg); }
+    75%      { transform: translateX(-3px) rotate(2deg); }
+  }
+
+  .bobber.playing {
+    animation: play 0.45s ease-in-out infinite;
+  }
+  @keyframes play {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    30%      { transform: translate(6px, -10px) rotate(-5deg); }
+    60%      { transform: translate(-5px, 0) rotate(4deg); }
+  }
+
+  .yarn.active {
+    animation: yarnWobble 0.4s ease-in-out infinite;
+  }
+  @keyframes yarnWobble {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    25%      { transform: translateX(-50%) rotate(18deg) translateY(-3px); }
+    50%      { transform: translateX(-50%) rotate(-12deg); }
+    75%      { transform: translateX(-50%) rotate(10deg) translateY(3px); }
+  }
+
   .cat-svg { width: 100%; height: 100%; display: block; }
+
+  #frontFace { display: none; }
+  .cat-svg.greeting #upperBody,
+  .cat-svg.greeting #backFarLeg,
+  .cat-svg.greeting #backNearLeg {
+    display: none;
+  }
+  .cat-svg.greeting #frontFace {
+    display: block;
+  }
 
   .eye {
     transform-box: fill-box;
@@ -150,6 +222,7 @@
   .critter {
     position: absolute;
     left: -10%;
+    z-index: 2;
     animation: fly-across 8s linear forwards;
   }
   .critter.reverse {
@@ -164,6 +237,25 @@
   @keyframes fly-across-reverse {
     from { left: 110%; }
     to   { left: -10%; }
+  }
+
+  .cloud {
+    position: absolute;
+    z-index: 1;
+    opacity: 0.6;
+    filter: blur(1px);
+    animation: cloud-drift linear forwards;
+  }
+  .cloud.reverse {
+    animation-name: cloud-drift-reverse;
+  }
+  @keyframes cloud-drift {
+    from { left: -20%; }
+    to   { left: 120%; }
+  }
+  @keyframes cloud-drift-reverse {
+    from { left: 120%; }
+    to   { left: -20%; }
   }
 
   .wing-flap {
@@ -186,7 +278,7 @@
 
   <div class="walker">
     <div class="bobber">
-      <svg class="cat-svg" viewBox="0 0 460 320" xmlns="http://www.w3.org/2000/svg">
+      <svg class="cat-svg" viewBox="-60 -110 520 445" xmlns="http://www.w3.org/2000/svg">
 
         <defs>
           <filter id="soften" x="-30%" y="-30%" width="160%" height="160%">
@@ -197,52 +289,15 @@
         <!-- ground shadow -->
         <ellipse cx="220" cy="308" rx="150" ry="8" fill="#000" opacity="0.10"/>
 
-        <!-- tail -->
-        <g>
-          <animateTransform attributeName="transform" type="rotate"
-            values="8 90 210; -6 90 210; 8 90 210" dur="0.5s" repeatCount="indefinite"/>
-          <path d="M 90 210 C 55 200, 30 165, 45 130 C 55 105, 80 100, 85 120 C 88 135, 70 138, 62 125"
-                fill="none" stroke="#231a14" stroke-width="20" stroke-linecap="round"/>
-          <path d="M 90 210 C 55 200, 30 165, 45 130 C 55 105, 80 100, 85 120 C 88 135, 70 138, 62 125"
-                fill="none" stroke="#e8944e" stroke-width="13" stroke-linecap="round"/>
-        </g>
-
-        <!-- back-far leg -->
-        <g>
+        <!-- back-far leg: stays planted on the ground even when the upper body rears up -->
+        <g id="backFarLeg">
           <animateTransform attributeName="transform" type="rotate"
             values="-16 115 250; 16 115 250; -16 115 250" dur="0.5s" repeatCount="indefinite"/>
           <path d="M 115 250 C 112 268, 110 285, 113 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
           <path d="M 115 250 C 112 268, 110 285, 113 300" stroke="#d97f3d" stroke-width="18" fill="none" stroke-linecap="round"/>
         </g>
-        <!-- front-far leg -->
-        <g>
-          <animateTransform attributeName="transform" type="rotate"
-            values="-16 250 250; 16 250 250; -16 250 250" dur="0.5s" repeatCount="indefinite"/>
-          <path d="M 250 250 C 247 268, 245 285, 248 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
-          <path d="M 250 250 C 247 268, 245 285, 248 300" stroke="#d97f3d" stroke-width="18" fill="none" stroke-linecap="round"/>
-        </g>
-
-        <!-- body -->
-        <ellipse cx="175" cy="215" rx="112" ry="72" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
-
-        <!-- white chest/belly patch, softened edge -->
-        <path d="M 177 174 C 218 170, 245 179, 256 206 C 265 228, 254 255, 222 269 C 191 278, 155 273, 141 246 C 130 221, 141 192, 168 179 Z" fill="#ffffff" filter="url(#soften)"/>
-
-        <!-- collar, oriented across the neck so it has visible height -->
-        <path d="M 269 162 L 286 193" stroke="#231a14" stroke-width="24" stroke-linecap="round"/>
-        <path d="M 269 162 L 286 193" stroke="#4a8f3c" stroke-width="16" stroke-linecap="round"/>
-        <circle cx="291" cy="201" r="6" fill="#e8c547" stroke="#231a14" stroke-width="2.5"/>
-
-        <!-- front-near leg -->
-        <g>
-          <animateTransform attributeName="transform" type="rotate"
-            values="16 258 250; -16 258 250; 16 258 250" dur="0.5s" repeatCount="indefinite"/>
-          <path d="M 258 250 C 261 268, 263 285, 260 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
-          <path d="M 258 250 C 261 268, 263 285, 260 300" stroke="#e8944e" stroke-width="18" fill="none" stroke-linecap="round"/>
-          <ellipse cx="260" cy="302" rx="15" ry="8" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
-        </g>
-        <!-- back-near leg -->
-        <g>
+        <!-- back-near leg: stays planted on the ground even when the upper body rears up -->
+        <g id="backNearLeg">
           <animateTransform attributeName="transform" type="rotate"
             values="16 108 250; -16 108 250; 16 108 250" dur="0.5s" repeatCount="indefinite"/>
           <path d="M 108 250 C 111 268, 113 285, 110 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
@@ -250,37 +305,130 @@
           <ellipse cx="110" cy="302" rx="15" ry="8" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
         </g>
 
-        <!-- head, positioned so its base touches the top of the collar -->
-        <circle cx="341" cy="143" r="65" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
+        <!-- everything from the hips up: tail, body, front legs, head. When scratching,
+             this whole group rotates back around the hind-leg pivot so the cat looks
+             like it's rearing up, while the two back legs above stay planted. -->
+        <g id="upperBody">
 
-        <!-- ears -->
-        <path d="M 291 105 L 295 54 L 326 81 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
-        <path d="M 303 96 L 304 76 L 317 86 Z" fill="#ffc9c9"/>
-        <path d="M 391 105 L 387 54 L 356 81 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
-        <path d="M 379 96 L 378 76 L 365 86 Z" fill="#ffc9c9"/>
+          <!-- tail -->
+          <g>
+            <animateTransform attributeName="transform" type="rotate"
+              values="8 90 210; -6 90 210; 8 90 210" dur="0.5s" repeatCount="indefinite"/>
+            <path d="M 90 210 C 55 200, 30 165, 45 130 C 55 105, 80 100, 85 120 C 88 135, 70 138, 62 125"
+                  fill="none" stroke="#231a14" stroke-width="20" stroke-linecap="round"/>
+            <path d="M 90 210 C 55 200, 30 165, 45 130 C 55 105, 80 100, 85 120 C 88 135, 70 138, 62 125"
+                  fill="none" stroke="#e8944e" stroke-width="13" stroke-linecap="round"/>
+          </g>
 
-        <!-- eyes -->
-        <g class="eye">
-          <ellipse cx="328" cy="140" rx="10" ry="13" fill="#231a14"/>
+          <!-- front-far leg -->
+          <g id="frontFarLeg">
+            <animateTransform attributeName="transform" type="rotate"
+              values="-16 250 250; 16 250 250; -16 250 250" dur="0.5s" repeatCount="indefinite"/>
+            <path d="M 250 250 C 247 268, 245 285, 248 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
+            <path d="M 250 250 C 247 268, 245 285, 248 300" stroke="#d97f3d" stroke-width="18" fill="none" stroke-linecap="round"/>
+          </g>
+
+          <!-- body -->
+          <ellipse cx="175" cy="215" rx="112" ry="72" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
+
+          <!-- white chest/belly patch, softened edge -->
+          <path d="M 177 174 C 218 170, 245 179, 256 206 C 265 228, 254 255, 222 269 C 191 278, 155 273, 141 246 C 130 221, 141 192, 168 179 Z" fill="#ffffff" filter="url(#soften)"/>
+
+          <!-- collar, oriented across the neck so it has visible height -->
+          <path d="M 269 162 L 286 193" stroke="#231a14" stroke-width="24" stroke-linecap="round"/>
+          <path d="M 269 162 L 286 193" stroke="#4a8f3c" stroke-width="16" stroke-linecap="round"/>
+          <circle cx="291" cy="201" r="6" fill="#e8c547" stroke="#231a14" stroke-width="2.5"/>
+
+          <!-- front-near leg -->
+          <g id="frontNearLeg">
+            <animateTransform attributeName="transform" type="rotate"
+              values="16 258 250; -16 258 250; 16 258 250" dur="0.5s" repeatCount="indefinite"/>
+            <path d="M 258 250 C 261 268, 263 285, 260 300" stroke="#231a14" stroke-width="26" fill="none" stroke-linecap="round"/>
+            <path d="M 258 250 C 261 268, 263 285, 260 300" stroke="#e8944e" stroke-width="18" fill="none" stroke-linecap="round"/>
+            <ellipse cx="260" cy="302" rx="15" ry="8" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+          </g>
+
+          <!-- head, grouped with id="sideHead" so the standing pose below can
+               reuse this exact same artwork via <use> instead of maintaining
+               a second hand-drawn head -->
+          <g id="sideHead">
+            <!-- head, positioned so its base touches the top of the collar -->
+            <circle cx="341" cy="143" r="65" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
+
+            <!-- ears -->
+            <path d="M 291 105 L 295 54 L 326 81 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
+            <path d="M 303 96 L 304 76 L 317 86 Z" fill="#ffc9c9"/>
+            <path d="M 391 105 L 387 54 L 356 81 Z" fill="#e8944e" stroke="#231a14" stroke-width="7" stroke-linejoin="round"/>
+            <path d="M 379 96 L 378 76 L 365 86 Z" fill="#ffc9c9"/>
+
+            <!-- eyes -->
+            <g class="eye">
+              <ellipse cx="328" cy="140" rx="10" ry="13" fill="#231a14"/>
+            </g>
+            <g class="eye">
+              <ellipse cx="365" cy="137" rx="10" ry="13" fill="#231a14"/>
+            </g>
+
+            <!-- white muzzle patch, softened edge -->
+            <path d="M 319 158 C 329 150, 356 150, 366 159 C 375 166, 371 179, 356 186 C 343 193, 325 190, 316 179 C 310 170, 311 163, 319 158 Z" fill="#ffffff" filter="url(#soften)"/>
+
+            <!-- nose + mouth -->
+            <path d="M 339 164 L 354 164 L 346 173 Z" fill="#231a14"/>
+            <path class="closed-mouth" d="M 346 173 Q 339 182 330 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path class="closed-mouth" d="M 346 173 Q 354 182 363 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <ellipse class="chew-mouth" cx="346" cy="178" rx="7" ry="5" fill="#3a2418"/>
+
+            <!-- whiskers -->
+            <line x1="314" y1="155" x2="282" y2="149" stroke="#7a7a7a" stroke-width="2.5"/>
+            <line x1="314" y1="162" x2="281" y2="162" stroke="#7a7a7a" stroke-width="2.5"/>
+            <line x1="377" y1="153" x2="409" y2="146" stroke="#7a7a7a" stroke-width="2.5"/>
+            <line x1="377" y1="160" x2="410" y2="158" stroke="#7a7a7a" stroke-width="2.5"/>
+          </g>
         </g>
-        <g class="eye">
-          <ellipse cx="365" cy="137" rx="10" ry="13" fill="#231a14"/>
+
+        <!-- front-facing standing pose, shown only while greeting (see .cat-svg.greeting rules).
+             Head radius (65) matches the walking pose exactly; the body is
+             stretched taller (ry 90 instead of 72) for a proper "standing up
+             straight" look, with the head shifted up to make room while his
+             feet stay planted at the same ground line. -->
+        <g id="frontFace">
+          <!-- hind legs: mostly hidden behind the body, feet peek out at the bottom (lengthened, and colored orange like the rest of him instead of solid black) -->
+          <path d="M 195 268 L 195 323" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+          <path d="M 195 268 L 195 323" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <path d="M 265 268 L 265 323" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+          <path d="M 265 268 L 265 323" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+
+          <!-- resting front paw -->
+          <path d="M 175 145 C 160 165, 150 191, 155 215" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+          <path d="M 175 145 C 160 165, 150 191, 155 215" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <ellipse cx="155" cy="217" rx="14" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+
+          <!-- body: stretched taller than the walking pose for a standing stance -->
+          <ellipse cx="230" cy="192" rx="80" ry="90" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
+          <ellipse cx="230" cy="210" rx="48" ry="55" fill="#ffffff" filter="url(#soften)"/>
+
+          <!-- hind feet, peeking below the body -->
+          <ellipse cx="195" cy="323" rx="15" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+          <ellipse cx="265" cy="323" rx="15" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+
+          <!-- collar, nudged back up slightly from its lower position -->
+          <path d="M 192 105 L 268 105" stroke="#231a14" stroke-width="26" stroke-linecap="round"/>
+          <path d="M 192 105 L 268 105" stroke="#4a8f3c" stroke-width="18" stroke-linecap="round"/>
+          <circle cx="230" cy="105" r="7" fill="#e8c547" stroke="#231a14" stroke-width="2.5"/>
+
+          <!-- reuse the exact same head artwork (circle, ears, eyes, muzzle, nose,
+               mouth, whiskers) from the walking pose instead of a separate
+               hand-drawn front-facing head — just shifted up to sit on top of
+               this standing body -->
+          <use href="#sideHead" transform="translate(-111 -113)"/>
+
+          <!-- waving front paw (animated via JS) -->
+          <g id="frontFaceWavePaw">
+            <path d="M 285 145 C 305 130, 322 107, 330 79" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+            <path d="M 285 145 C 305 130, 322 107, 330 79" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+            <ellipse cx="332" cy="76" rx="14" ry="10" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+          </g>
         </g>
-
-        <!-- white muzzle patch, softened edge -->
-        <path d="M 319 158 C 329 150, 356 150, 366 159 C 375 166, 371 179, 356 186 C 343 193, 325 190, 316 179 C 310 170, 311 163, 319 158 Z" fill="#ffffff" filter="url(#soften)"/>
-
-        <!-- nose + mouth -->
-        <path d="M 339 164 L 354 164 L 346 173 Z" fill="#231a14"/>
-        <path class="closed-mouth" d="M 346 173 Q 339 182 330 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path class="closed-mouth" d="M 346 173 Q 354 182 363 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <ellipse class="chew-mouth" cx="346" cy="178" rx="7" ry="5" fill="#3a2418"/>
-
-        <!-- whiskers -->
-        <line x1="314" y1="155" x2="282" y2="149" stroke="#7a7a7a" stroke-width="2.5"/>
-        <line x1="314" y1="162" x2="281" y2="162" stroke="#7a7a7a" stroke-width="2.5"/>
-        <line x1="377" y1="153" x2="409" y2="146" stroke="#7a7a7a" stroke-width="2.5"/>
-        <line x1="377" y1="160" x2="410" y2="158" stroke="#7a7a7a" stroke-width="2.5"/>
 
       </svg>
     </div>
@@ -294,6 +442,62 @@
     </svg>
   </div>
 
+  <div class="post" id="post">
+    <svg viewBox="0 0 60 90" width="95" height="145">
+      <ellipse cx="30" cy="82" rx="24" ry="8" fill="#8a5a2b" stroke="#5c3a1a" stroke-width="2"/>
+      <rect x="20" y="15" width="20" height="68" rx="8" fill="#d8b98a" stroke="#8a5a2b" stroke-width="2"/>
+      <line x1="20" y1="25" x2="40" y2="25" stroke="#8a5a2b" stroke-width="2"/>
+      <line x1="20" y1="35" x2="40" y2="35" stroke="#8a5a2b" stroke-width="2"/>
+      <line x1="20" y1="45" x2="40" y2="45" stroke="#8a5a2b" stroke-width="2"/>
+      <line x1="20" y1="55" x2="40" y2="55" stroke="#8a5a2b" stroke-width="2"/>
+      <line x1="20" y1="65" x2="40" y2="65" stroke="#8a5a2b" stroke-width="2"/>
+      <line x1="20" y1="75" x2="40" y2="75" stroke="#8a5a2b" stroke-width="2"/>
+      <ellipse cx="30" cy="15" rx="16" ry="6" fill="#c9432f" stroke="#231a14" stroke-width="2"/>
+      <circle cx="30" cy="8" r="6" fill="#f2c94c" stroke="#231a14" stroke-width="2"/>
+    </svg>
+  </div>
+
+  <div class="yarn" id="yarn">
+    <svg viewBox="0 0 50 50" width="38" height="38">
+      <circle cx="25" cy="25" r="20" fill="#e07a9e" stroke="#a94a6b" stroke-width="2"/>
+      <path d="M 6 18 Q 25 5 44 18" stroke="#c65f85" stroke-width="2" fill="none"/>
+      <path d="M 6 32 Q 25 45 44 32" stroke="#c65f85" stroke-width="2" fill="none"/>
+      <path d="M 5 25 Q 25 15 45 25" stroke="#c65f85" stroke-width="2" fill="none"/>
+      <path d="M 8 12 Q 25 25 42 38" stroke="#c65f85" stroke-width="2" fill="none"/>
+      <path d="M 38 40 Q 45 44 43 50" stroke="#a94a6b" stroke-width="2" fill="none"/>
+    </svg>
+  </div>
+
+  <div class="click-menu" id="clickMenu">
+    <button class="menu-btn" id="btnFood" type="button">
+      <svg viewBox="0 0 40 30" width="26" height="20">
+        <ellipse cx="20" cy="22" rx="17" ry="6" fill="#b0b0b0" stroke="#7a7a7a" stroke-width="2"/>
+        <ellipse cx="20" cy="17" rx="13" ry="7" fill="#8a5a2b"/>
+        <ellipse cx="20" cy="15" rx="10" ry="5" fill="#a9702f"/>
+      </svg>
+      Food
+    </button>
+    <button class="menu-btn" id="btnPost" type="button">
+      <svg viewBox="0 0 40 40" width="22" height="22">
+        <ellipse cx="20" cy="35" rx="15" ry="4" fill="#8a5a2b"/>
+        <rect x="13" y="10" width="14" height="27" rx="6" fill="#d8b98a" stroke="#8a5a2b" stroke-width="2"/>
+        <line x1="13" y1="16" x2="27" y2="16" stroke="#8a5a2b" stroke-width="2"/>
+        <line x1="13" y1="22" x2="27" y2="22" stroke="#8a5a2b" stroke-width="2"/>
+        <line x1="13" y1="28" x2="27" y2="28" stroke="#8a5a2b" stroke-width="2"/>
+        <circle cx="20" cy="8" r="5" fill="#f2c94c"/>
+      </svg>
+      Post
+    </button>
+    <button class="menu-btn" id="btnToy" type="button">
+      <svg viewBox="0 0 30 30" width="20" height="20">
+        <circle cx="15" cy="15" r="12" fill="#e07a9e" stroke="#a94a6b" stroke-width="2"/>
+        <path d="M 4 15 Q 15 4 26 15" stroke="#c65f85" stroke-width="2" fill="none"/>
+        <path d="M 4 15 Q 15 26 26 15" stroke="#c65f85" stroke-width="2" fill="none"/>
+      </svg>
+      Toy
+    </button>
+  </div>
+
   <div class="speech-bubble" id="speechBubble">Hi! I'm Ollie Sharp</div>
 
 </div>
@@ -304,6 +508,10 @@
   const ground = document.querySelector('.ground');
   const bubble = document.getElementById('speechBubble');
   const bowl = document.getElementById('bowl');
+  const post = document.getElementById('post');
+  const yarn = document.getElementById('yarn');
+  const menu = document.getElementById('clickMenu');
+  const props = { food: bowl, post: post, toy: yarn };
 
   // ---- speech bubble ----
   let hideTimeout;
@@ -323,6 +531,7 @@
 
   walker.addEventListener('click', (e) => {
     e.stopPropagation();
+    menu.classList.remove('show');
     bubble.classList.add('show');
     cancelAnimationFrame(bubbleAnimFrame);
     updateBubblePosition();
@@ -332,22 +541,78 @@
       bubble.classList.remove('show');
       cancelAnimationFrame(bubbleAnimFrame);
     }, 2250);
+
+    // stand up facing forward and wave while greeting, as long as he's not
+    // already busy eating/scratching/playing somewhere
+    if (state === 'patrol') {
+      state = 'interacting';
+      targetType = 'greet';
+      catSvg.pauseAnimations();
+      catSvg.classList.add('greeting');
+      clearTimeout(actionTimeout);
+      actionTimeout = setTimeout(() => {
+        catSvg.classList.remove('greeting');
+        frontFaceWavePaw.removeAttribute('transform');
+        catSvg.unpauseAnimations();
+        state = 'patrol';
+      }, 2250);
+    }
   });
 
   // ---- walking / bowl / eating ----
-  const CAT_WIDTH = 260;
+  // The svg's viewBox has extra margin on the top/left (-60 -70 520 390 instead
+  // of 0 0 460 320) so the rearing-up pose below has room to breathe without
+  // the head/tail getting clipped by the edge of the SVG. The .walker box was
+  // scaled up to 294x226 to match, so the cat still renders at the same size.
+  const CAT_WIDTH = 294;
+  const VIEWBOX_X = -60;
+  const VIEWBOX_WIDTH = 520;
+
   const bobber = document.querySelector('.bobber');
   const catSvg = document.querySelector('.cat-svg');
+  const upperBody = document.getElementById('upperBody');
+  const frontNearLeg = document.getElementById('frontNearLeg');
+  const frontFarLeg = document.getElementById('frontFarLeg');
+  const frontFaceWavePaw = document.getElementById('frontFaceWavePaw');
+  const FRONT_FACE_WAVE_PIVOT = { x: 285, y: 145 };
+
+  // pivot for rearing up on the hind legs — this is exactly where the (separate,
+  // stationary) back legs are rooted, so the rotation must stay centered right
+  // on top of them rather than being shifted, or the body visually detaches
+  // from the legs and they end up hidden behind it.
+  const REAR_PIVOT = { x: 112, y: 250 };
+  const REAR_ANGLE = -42;
+  const FRONT_NEAR_PIVOT = { x: 258, y: 250 };
+  const FRONT_FAR_PIVOT = { x: 250, y: 250 };
+
+  // The cat artwork isn't horizontally symmetric inside its viewBox — the nose
+  // sits much closer to the right edge than the left. When facing left the
+  // whole box is mirrored (scaleX(-1) around the center), which puts the nose
+  // near the opposite edge instead. So "how far the nose is from the box's
+  // left edge" is different depending on which way the cat faces, and
+  // arrival/eating logic needs to account for that instead of just comparing
+  // the box's left edge to the target.
+  const NOSE_X_IN_VIEWBOX = 346;
+  const NOSE_OFFSET_FACING_RIGHT = ((NOSE_X_IN_VIEWBOX - VIEWBOX_X) / VIEWBOX_WIDTH) * CAT_WIDTH;
+  const NOSE_OFFSET_FACING_LEFT = CAT_WIDTH - NOSE_OFFSET_FACING_RIGHT;
+
+  function noseOffsetFor(f) {
+    return f === 1 ? NOSE_OFFSET_FACING_RIGHT : NOSE_OFFSET_FACING_LEFT;
+  }
 
   let posPx = 0;
   let dir = 1;
   let facing = 1;
-  let state = 'patrol'; // 'patrol' | 'toBowl' | 'eating'
+  let state = 'patrol'; // 'patrol' | 'toTarget' | 'interacting'
   let targetPx = null;
+  let targetType = null; // 'food' | 'post' | 'toy'
+  let pendingClickX = null;
   let lastTime = null;
-  let eatTimeout;
+  let actionTimeout;
   let minPx = 0;
   let maxPx = 0;
+
+  const ACTION_DURATION = { food: 3000, post: 2800, toy: 3500 };
 
   function recalcBounds() {
     const stageWidth = stage.getBoundingClientRect().width;
@@ -362,20 +627,58 @@
   const SPEED_PX = 90; // pixels per second
 
   ground.addEventListener('click', (e) => {
+    e.stopPropagation();
     const stageRect = stage.getBoundingClientRect();
     const clickX = e.clientX - stageRect.left;
-    const clamped = Math.max(minPx, Math.min(maxPx, clickX));
+    pendingClickX = Math.max(minPx, Math.min(maxPx, clickX));
 
-    bowl.style.left = clamped + 'px';
-    bowl.style.display = 'block';
-
-    targetPx = clamped;
-    state = 'toBowl';
-    bobber.classList.remove('eating');
-    catSvg.classList.remove('eating');
-    catSvg.unpauseAnimations();
-    clearTimeout(eatTimeout);
+    menu.style.left = pendingClickX + 'px';
+    menu.classList.add('show');
   });
+
+  // clicking anywhere outside the menu (and not on the ground, which opens it) closes it
+  document.addEventListener('click', (e) => {
+    if (!menu.contains(e.target) && e.target !== ground) {
+      menu.classList.remove('show');
+    }
+  });
+
+  function clearAllProps() {
+    bowl.style.display = 'none';
+    post.style.display = 'none';
+    yarn.style.display = 'none';
+    yarn.classList.remove('active');
+  }
+
+  function chooseTarget(type) {
+    menu.classList.remove('show');
+    if (pendingClickX == null) return;
+
+    clearAllProps();
+    clearTimeout(actionTimeout);
+
+    const propEl = props[type];
+    propEl.style.left = pendingClickX + 'px';
+    propEl.style.display = 'block';
+
+    targetPx = pendingClickX;
+    targetType = type;
+    // decide facing once, when the prop is placed — recalculating this every
+    // frame based on the box edge (rather than the nose) caused it to flip
+    // direction mid-walk right as the cat got close, which glitched the
+    // approach and made it miss the "arrived" check entirely
+    facing = (targetPx - posPx) >= 0 ? 1 : -1;
+    state = 'toTarget';
+
+    bobber.classList.remove('eating', 'scratching', 'playing');
+    catSvg.classList.remove('eating', 'greeting');
+    frontFaceWavePaw.removeAttribute('transform');
+    catSvg.unpauseAnimations();
+  }
+
+  document.getElementById('btnFood').addEventListener('click', (e) => { e.stopPropagation(); chooseTarget('food'); });
+  document.getElementById('btnPost').addEventListener('click', (e) => { e.stopPropagation(); chooseTarget('post'); });
+  document.getElementById('btnToy').addEventListener('click', (e) => { e.stopPropagation(); chooseTarget('toy'); });
 
   function frame(timestamp) {
     if (lastTime === null) lastTime = timestamp;
@@ -386,28 +689,60 @@
       posPx += dir * SPEED_PX * dt;
       if (posPx >= maxPx) { posPx = maxPx; dir = -1; facing = -1; }
       if (posPx <= minPx) { posPx = minPx; dir = 1; facing = 1; }
-    } else if (state === 'toBowl') {
-      const diff = targetPx - posPx;
-      facing = diff >= 0 ? 1 : -1;
+    } else if (state === 'toTarget') {
+      const noseX = posPx + noseOffsetFor(facing);
+      const diff = targetPx - noseX;
       const step = SPEED_PX * dt;
 
       if (Math.abs(diff) <= step) {
-        posPx = targetPx;
-        state = 'eating';
-        bobber.classList.add('eating');
-        catSvg.classList.add('eating');
-        catSvg.pauseAnimations();
-        eatTimeout = setTimeout(() => {
-          bowl.style.display = 'none';
-          bobber.classList.remove('eating');
+        // snap so the nose (not the box edge) lands exactly on the prop
+        posPx = targetPx - noseOffsetFor(facing);
+        state = 'interacting';
+
+        if (targetType === 'food') {
+          bobber.classList.add('eating');
+          catSvg.classList.add('eating');
+          catSvg.pauseAnimations();
+        } else if (targetType === 'post') {
+          // legs/tail are frozen via pauseAnimations(); the rearing pose and
+          // claw-swipe motion are driven procedurally each frame below instead
+          catSvg.pauseAnimations();
+        } else if (targetType === 'toy') {
+          bobber.classList.add('playing');
+          yarn.classList.add('active');
+          catSvg.pauseAnimations();
+        }
+
+        actionTimeout = setTimeout(() => {
+          clearAllProps();
+          bobber.classList.remove('eating', 'scratching', 'playing');
           catSvg.classList.remove('eating');
           catSvg.unpauseAnimations();
           state = 'patrol';
           dir = facing;
-        }, 3000);
+        }, ACTION_DURATION[targetType] || 3000);
       } else {
         posPx += facing * step;
       }
+    }
+
+    if (state === 'interacting' && targetType === 'post') {
+      // rear the side-view upper body back on the hind legs, then swipe the
+      // two front legs up and down against the post like clawing
+      upperBody.setAttribute('transform', 'rotate(' + REAR_ANGLE + ' ' + REAR_PIVOT.x + ' ' + REAR_PIVOT.y + ')');
+      const swipe = Math.sin(timestamp / 130) * 18;
+      frontNearLeg.setAttribute('transform', 'rotate(' + (-55 + swipe) + ' ' + FRONT_NEAR_PIVOT.x + ' ' + FRONT_NEAR_PIVOT.y + ')');
+      frontFarLeg.setAttribute('transform', 'rotate(' + (-55 - swipe) + ' ' + FRONT_FAR_PIVOT.x + ' ' + FRONT_FAR_PIVOT.y + ')');
+    } else {
+      upperBody.removeAttribute('transform');
+    }
+
+    if (state === 'interacting' && targetType === 'greet') {
+      // the side view is hidden (see .cat-svg.greeting CSS) and the
+      // front-facing pose is shown instead — just wave its paw
+      const wave = Math.sin(timestamp / 150) * 30;
+      frontFaceWavePaw.setAttribute('transform',
+        'rotate(' + (-20 + wave) + ' ' + FRONT_FACE_WAVE_PIVOT.x + ' ' + FRONT_FACE_WAVE_PIVOT.y + ')');
     }
 
     walker.style.left = posPx + 'px';
@@ -439,13 +774,49 @@
     const el = document.createElement('div');
     el.className = 'critter ' + (Math.random() < 0.5 ? 'reverse' : '');
     el.style.top = (35 + Math.random() * 30) + '%';
+    el.style.animationDuration = (5 + Math.random() * 5) + 's';
     el.innerHTML = butterflySVG(color);
     el.addEventListener('animationend', () => el.remove());
     skyLayer.appendChild(el);
   }
 
-  spawnCritter();
-  setInterval(spawnCritter, 15000);
+  // seed a handful right away so the sky isn't empty on load
+  for (let i = 0; i < 4; i++) {
+    setTimeout(spawnCritter, i * 900);
+  }
+  setInterval(spawnCritter, 4000);
+
+  // ---- soft background clouds ----
+  function cloudSVG(scale) {
+    const w = Math.round(120 * scale);
+    const h = Math.round(60 * scale);
+    return `
+      <svg viewBox="0 0 120 60" width="${w}" height="${h}">
+        <ellipse cx="35" cy="38" rx="30" ry="18" fill="#ffffff"/>
+        <ellipse cx="60" cy="26" rx="26" ry="20" fill="#ffffff"/>
+        <ellipse cx="85" cy="36" rx="28" ry="17" fill="#ffffff"/>
+        <ellipse cx="55" cy="42" rx="38" ry="14" fill="#ffffff"/>
+      </svg>`;
+  }
+
+  function spawnCloud() {
+    const scale = 0.7 + Math.random() * 1.1;
+    const duration = 28 + Math.random() * 22;
+    const el = document.createElement('div');
+    el.className = 'cloud ' + (Math.random() < 0.5 ? 'reverse' : '');
+    el.style.top = (4 + Math.random() * 40) + '%';
+    el.style.opacity = (0.4 + Math.random() * 0.35).toFixed(2);
+    el.style.animationDuration = duration + 's';
+    el.innerHTML = cloudSVG(scale);
+    el.addEventListener('animationend', () => el.remove());
+    skyLayer.appendChild(el);
+  }
+
+  // seed a few clouds immediately so the sky isn't empty on load
+  for (let i = 0; i < 3; i++) {
+    setTimeout(spawnCloud, i * 1500);
+  }
+  setInterval(spawnCloud, 7000);
 </script>
 
 </body>
