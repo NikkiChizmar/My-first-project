@@ -24,7 +24,7 @@
     left: 0;
     width: 100%;
     height: 14%;
-    background: #cfe2b8;
+    background-color: #cfe2b8;
     border-top: 3px solid #b7cf9e;
   }
 
@@ -52,11 +52,11 @@
     bottom: calc(14% - 11px);
     width: 294px;
     height: 258px;
-    left: 4%;
+    left: 16%; /* fixed on screen — he always faces right and the world scrolls past him instead */
     transform-origin: center;
   }
 
-  .bowl, .post, .yarn {
+  .bowl, .post, .yarn, .sign {
     position: absolute;
     bottom: 13%;
     transform: translateX(-50%);
@@ -66,6 +66,61 @@
   .bowl { width: 50px; height: 35px; }
   .post { width: 95px; height: 145px; }
   .yarn { width: 38px; height: 38px; }
+  .sign { width: 100px; height: 150px; }
+
+  .fish-prompt {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffdab9;
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+    padding: 14px 18px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 30;
+    max-width: 260px;
+    text-align: center;
+  }
+  .fish-prompt.show {
+    display: flex;
+  }
+  .fish-prompt-text {
+    font-size: 14px;
+    color: #333;
+    font-family: sans-serif;
+    line-height: 1.4;
+  }
+  .fish-prompt-buttons {
+    display: flex;
+    gap: 8px;
+  }
+  .fish-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-family: sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .fish-btn-secondary {
+    background: #ffe8d6;
+    color: #7a4a25;
+  }
+  .fish-btn-secondary:hover {
+    background: #ffdcc0;
+  }
+  .fish-btn-primary {
+    background: #f4a261;
+    color: #fff;
+  }
+  .fish-btn-primary:hover {
+    background: #e8934a;
+  }
 
   .click-menu {
     position: absolute;
@@ -229,6 +284,23 @@
     pointer-events: none;
   }
 
+  /* trees scroll past behind the ground/props as he walks, at a slower rate
+     than the foreground for a bit of parallax depth */
+  .tree-layer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .tree {
+    position: absolute;
+    bottom: 13%;
+    transform: translateX(-50%);
+  }
+
   .critter {
     position: absolute;
     left: -10%;
@@ -326,13 +398,162 @@
 
   .rainboot { display: none; }
   .cat-svg.raining .rainboot { display: block; }
+
+  /* ---- bird that lands on the grass every so often ---- */
+  .bird {
+    position: absolute;
+    bottom: 13%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: none;
+    transform-origin: center bottom;
+  }
+  .bird.bird-landing {
+    animation: bird-flutter-down 1.1s ease-out forwards;
+  }
+  .bird.bird-leaving {
+    animation: bird-fly-away 3.6s ease-in forwards;
+  }
+  /* wings flap fast while airborne, then fold still once perched */
+  .bird .wing-flap {
+    animation: none;
+  }
+  .bird.bird-landing .wing-flap,
+  .bird.bird-leaving .wing-flap {
+    animation: flap 0.14s ease-in-out infinite;
+  }
+  @keyframes bird-flutter-down {
+    0%   { transform: translateX(-50%) translate(0, -160px) rotate(-8deg); opacity: 0.4; }
+    22%  { transform: translateX(-50%) translate(-14px, -115px) rotate(6deg); opacity: 0.7; }
+    44%  { transform: translateX(-50%) translate(10px, -75px) rotate(-7deg); opacity: 0.9; }
+    64%  { transform: translateX(-50%) translate(-8px, -40px) rotate(5deg); opacity: 1; }
+    80%  { transform: translateX(-50%) translate(4px, -16px) rotate(-3deg); }
+    92%  { transform: translateX(-50%) translate(-2px, -3px) rotate(1deg); }
+    100% { transform: translateX(-50%) translate(0, 0) rotate(0deg); opacity: 1; }
+  }
+  @keyframes bird-fly-away {
+    0%   { transform: translateX(-50%) translate(0, 0) rotate(0deg); opacity: 1; }
+    30%  { transform: translateX(-50%) translate(30px, -40vh) rotate(10deg); opacity: 1; }
+    100% { transform: translateX(-50%) translate(90px, -130vh) rotate(18deg); opacity: 1; }
+  }
+
+  /* freeze the walking bounce entirely while Ollie is startled */
+  .bobber.frozen {
+    animation: none;
+  }
+
+  /* surprised reaction when Ollie notices the bird: big eyes, mouth wide open */
+  .cat-svg.surprised .eye {
+    animation: none;
+    transform: scale(1.7);
+  }
+  .surprise-mouth {
+    opacity: 0;
+  }
+  .cat-svg.surprised .closed-mouth {
+    opacity: 0;
+  }
+  .cat-svg.surprised .chew-mouth {
+    opacity: 0;
+  }
+  .cat-svg.surprised .surprise-mouth {
+    opacity: 1;
+  }
+
+  /* ---- fishing scene: a separate full-screen view he's taken to from the sign.
+     Same setup as the main walk (sky filling most of the screen, a strip
+     along the bottom) — the strip is just split into a little grass on the
+     left and a pond taking up the rest, instead of solid ground. ---- */
+  .fishing-scene {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 200;
+    background: linear-gradient(to bottom, #cfe9ff 0%, #eef8ff 55%, #d8ecc9 100%);
+  }
+  .fishing-scene.show {
+    display: block;
+  }
+  .fishing-ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 14%;
+    overflow: hidden;
+    box-shadow: 0 -3px 0 rgba(0, 0, 0, 0.06);
+    background: linear-gradient(to right,
+      #cfe2b8 0%,
+      #cfe2b8 24%,
+      #6bb2dd 48%,
+      #3f7dbf 100%);
+  }
+  .fishing-water-ripples {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 58%;
+    overflow: hidden;
+  }
+  .ripple {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border: 2px solid rgba(255, 255, 255, 0.65);
+    border-radius: 50%;
+    /* flattened into a low ellipse so it reads as lying flat on the water's
+       surface instead of a circle floating above it */
+    transform: translate(-50%, -50%) scaleY(0.35) scale(0.2);
+    opacity: 0.75;
+    animation: ripple-expand 2.4s ease-out forwards;
+    pointer-events: none;
+  }
+  @keyframes ripple-expand {
+    0%   { transform: translate(-50%, -50%) scaleY(0.35) scale(0.2); opacity: 0.7; }
+    100% { transform: translate(-50%, -50%) scaleY(0.35) scale(2.6); opacity: 0; }
+  }
+  .fishing-ollie {
+    position: absolute;
+    left: 2%;
+    bottom: 14%; /* his feet (viewBox y=400) land exactly on the ground line */
+    width: 270px;
+    height: 360px;
+    z-index: 1;
+  }
+  .fishing-ollie svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible; /* lets the rod/line extend out over the pond */
+  }
+  .fishing-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 210;
+    background: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-family: sans-serif;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  }
+  .fishing-back-btn:hover {
+    background: #f2f2f2;
+  }
 </style>
 </head>
 <body>
 
 <div class="stage">
   <div class="sky-layer" id="skyLayer"></div>
-  <div class="caption">My cat, walking back and forth 🐾</div>
+  <div class="tree-layer" id="treeLayer"></div>
+  <div class="caption">Ollie Sharp is on a walk 🐾</div>
   <div class="instructions">Click Ollie to say hi 👋 &nbsp;·&nbsp; Click the grass to give him food, a toy, or a scratching post 🐟🧶🐾</div>
   <div class="ground"></div>
 
@@ -465,6 +686,9 @@
             <path class="closed-mouth" d="M 346 173 Q 339 182 330 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
             <path class="closed-mouth" d="M 346 173 Q 354 182 363 176" stroke="#231a14" stroke-width="3" fill="none" stroke-linecap="round"/>
             <ellipse class="chew-mouth" cx="346" cy="178" rx="7" ry="5" fill="#3a2418"/>
+            <!-- wide-open startled mouth, shown when Ollie notices the bird -->
+            <ellipse class="surprise-mouth" cx="346" cy="182" rx="13" ry="17" fill="#3a2418"/>
+            <ellipse class="surprise-mouth" cx="346" cy="188" rx="6" ry="8" fill="#d6798c"/>
 
             <!-- whiskers -->
             <line x1="314" y1="155" x2="282" y2="149" stroke="#7a7a7a" stroke-width="2.5"/>
@@ -555,6 +779,32 @@
   <div class="weather-overlay" id="weatherOverlay"></div>
   <div class="rain-layer" id="rainLayer"></div>
 
+  <div class="bird" id="bird">
+    <svg viewBox="0 0 40 44" width="46" height="50">
+      <!-- legs/feet -->
+      <line x1="16" y1="33" x2="16" y2="39" stroke="#e8a23c" stroke-width="2" stroke-linecap="round"/>
+      <line x1="24" y1="33" x2="24" y2="39" stroke="#e8a23c" stroke-width="2" stroke-linecap="round"/>
+      <path d="M 16 39 L 12 39 M 16 39 L 20 39" stroke="#e8a23c" stroke-width="2" stroke-linecap="round"/>
+      <path d="M 24 39 L 20 39 M 24 39 L 28 39" stroke="#e8a23c" stroke-width="2" stroke-linecap="round"/>
+      <!-- tail, angled down at the back -->
+      <path d="M 21 29 L 12 37 L 19 31 Z" fill="#3f4d58"/>
+      <!-- body, upright -->
+      <ellipse cx="20" cy="21" rx="10" ry="13" fill="#5b6b78"/>
+      <!-- belly patch -->
+      <ellipse cx="20" cy="25" rx="6" ry="7" fill="#c9d3d8"/>
+      <!-- folded wing on the side -->
+      <g class="wing-flap">
+        <path d="M 26 15 C 33 13, 34 23, 27 27 C 24 23, 23 18, 26 15 Z" fill="#3f4d58"/>
+      </g>
+      <!-- head, sitting on top -->
+      <circle cx="20" cy="8" r="7.5" fill="#5b6b78"/>
+      <!-- beak -->
+      <path d="M 26 8 L 32 6.5 L 26 11 Z" fill="#e8a23c"/>
+      <!-- eye -->
+      <circle cx="22" cy="6" r="1.5" fill="#231a14"/>
+    </svg>
+  </div>
+
   <div class="bowl" id="bowl">
     <svg viewBox="0 0 60 40" width="50" height="35">
       <ellipse cx="30" cy="30" rx="26" ry="8" fill="#b0b0b0" stroke="#7a7a7a" stroke-width="2"/>
@@ -587,6 +837,31 @@
       <path d="M 8 12 Q 25 25 42 38" stroke="#c65f85" stroke-width="2" fill="none"/>
       <path d="M 38 40 Q 45 44 43 50" stroke="#a94a6b" stroke-width="2" fill="none"/>
     </svg>
+  </div>
+
+  <div class="sign" id="sign">
+    <svg viewBox="0 0 100 150" width="100" height="150">
+      <rect x="45" y="50" width="12" height="98" fill="#8a5a2b" stroke="#5c3a1a" stroke-width="2"/>
+      <g transform="rotate(-4 50 34)">
+        <rect x="15" y="8" width="70" height="52" rx="5" fill="#d8b98a" stroke="#5c3a1a" stroke-width="3"/>
+        <g transform="translate(26 13) scale(1.4)">
+          <g transform="translate(34 0) scale(-1 1)">
+            <path d="M 2 8 C 8 0, 20 0, 26 8 C 20 16, 8 16, 2 8 Z" fill="#4a90d9" stroke="#231a14" stroke-width="1.5"/>
+            <path d="M 26 8 L 32 3 L 32 13 Z" fill="#4a90d9" stroke="#231a14" stroke-width="1.5"/>
+            <circle cx="7" cy="7" r="1.2" fill="#231a14"/>
+          </g>
+        </g>
+        <text x="50" y="52" font-size="14" font-family="sans-serif" font-weight="bold" fill="#5c3a1a" text-anchor="middle">FISHING</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="fish-prompt" id="fishPrompt">
+    <div class="fish-prompt-text">Ollie found a fishing spot! Keep walking, or stop to fish?</div>
+    <div class="fish-prompt-buttons">
+      <button class="fish-btn fish-btn-secondary" id="btnKeepWalking" type="button">Keep Walking</button>
+      <button class="fish-btn fish-btn-primary" id="btnGoFish" type="button">Go Fish!</button>
+    </div>
   </div>
 
   <div class="click-menu" id="clickMenu">
@@ -623,6 +898,79 @@
 
 </div>
 
+<div class="fishing-scene" id="fishingScene">
+  <div class="fishing-ground">
+    <div class="fishing-water-ripples" id="waterRipples"></div>
+  </div>
+
+  <div class="fishing-ollie">
+    <svg viewBox="0 0 300 400">
+      <defs>
+        <filter id="softenFishing" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="6"/>
+        </filter>
+      </defs>
+
+      <!-- same standing pose/proportions as when he waves hello, just shifted
+           so his feet land on the grass -->
+      <g transform="translate(-110 77)">
+        <!-- hind legs -->
+        <path d="M 195 268 L 195 323" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M 195 268 L 195 323" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+        <path d="M 265 268 L 265 323" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M 265 268 L 265 323" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+
+        <!-- resting front paw -->
+        <path d="M 175 145 C 160 165, 150 191, 155 215" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M 175 145 C 160 165, 150 191, 155 215" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+        <ellipse cx="155" cy="217" rx="14" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+
+        <!-- body -->
+        <ellipse cx="230" cy="192" rx="80" ry="90" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
+        <ellipse cx="230" cy="210" rx="48" ry="55" fill="#ffffff" filter="url(#softenFishing)"/>
+
+        <!-- hind feet (covered by boots below) -->
+        <ellipse cx="195" cy="323" rx="15" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+        <ellipse cx="265" cy="323" rx="15" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+
+        <!-- collar -->
+        <path d="M 192 105 L 268 105" stroke="#231a14" stroke-width="26" stroke-linecap="round"/>
+        <path d="M 192 105 L 268 105" stroke="#4a8f3c" stroke-width="18" stroke-linecap="round"/>
+        <circle cx="230" cy="105" r="7" fill="#e8c547" stroke="#231a14" stroke-width="2.5"/>
+
+        <!-- head, the exact same art used everywhere else -->
+        <use href="#sideHead" transform="translate(-111 -113)"/>
+
+        <!-- raised paw (his "wave" paw at rest), now holding the rod -->
+        <path d="M 285 145 C 305 130, 322 107, 330 79" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M 285 145 C 305 130, 322 107, 330 79" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+        <ellipse cx="332" cy="76" rx="14" ry="10" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+
+        <!-- fishing rod: out from his paw, line dropping into the pond -->
+        <path d="M 332 76 L 370 13" stroke="#5c3a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 370 13 L 485 318" stroke="#3a2418" stroke-width="1.5" fill="none"/>
+        <circle cx="485" cy="318" r="6" fill="#e07a9e" stroke="#231a14" stroke-width="2"/>
+
+        <!-- fishing boots -->
+        <path d="M 185 290 L 185 306 C 181 310, 180 316, 185 320 C 189 323, 201 323, 205 320 C 210 316, 209 310, 205 306 L 205 290 Z"
+              fill="#6b7f4e" stroke="#231a14" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M 255 290 L 255 306 C 251 310, 250 316, 255 320 C 259 323, 271 323, 275 320 C 280 316, 279 310, 275 306 L 275 290 Z"
+              fill="#6b7f4e" stroke="#231a14" stroke-width="4" stroke-linejoin="round"/>
+
+        <!-- fishing hat -->
+        <g transform="translate(196 -49)">
+          <path d="M 6 20 Q 10 2 34 2 Q 58 2 62 20 Z" fill="#8a5a2b" stroke="#231a14" stroke-width="3" stroke-linejoin="round"/>
+          <ellipse cx="34" cy="21" rx="34" ry="6" fill="#a9702f" stroke="#231a14" stroke-width="3"/>
+          <path d="M 46 10 L 58 6" stroke="#e07a9e" stroke-width="2"/>
+          <circle cx="59" cy="5" r="2" fill="#e8c547" stroke="#231a14" stroke-width="1"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+
+  <button class="fishing-back-btn" id="fishingBackBtn" type="button">← Back to walk</button>
+</div>
+
 <script>
   const walker = document.querySelector('.walker');
   const stage = document.querySelector('.stage');
@@ -631,8 +979,10 @@
   const bowl = document.getElementById('bowl');
   const post = document.getElementById('post');
   const yarn = document.getElementById('yarn');
+  const sign = document.getElementById('sign');
+  const fishPrompt = document.getElementById('fishPrompt');
   const menu = document.getElementById('clickMenu');
-  const props = { food: bowl, post: post, toy: yarn };
+  const props = { food: bowl, post: post, toy: yarn, sign: sign };
 
   // ---- speech bubble ----
   let hideTimeout;
@@ -706,44 +1056,168 @@
   const FRONT_NEAR_PIVOT = { x: 258, y: 250 };
   const FRONT_FAR_PIVOT = { x: 250, y: 250 };
 
-  // The cat artwork isn't horizontally symmetric inside its viewBox — the nose
-  // sits much closer to the right edge than the left. When facing left the
-  // whole box is mirrored (scaleX(-1) around the center), which puts the nose
-  // near the opposite edge instead. So "how far the nose is from the box's
-  // left edge" is different depending on which way the cat faces, and
-  // arrival/eating logic needs to account for that instead of just comparing
-  // the box's left edge to the target.
+  // Ollie now always faces right and never turns around — he stays put at a
+  // fixed spot on screen (see .walker's CSS "left") and the ground/props/bird
+  // scroll past him instead, like a camera following him on a long walk.
+  // "scrollOffset" is the total distance he's "walked" so far; anything placed
+  // in the world (props, the bird) has a fixed worldX, and its on-screen
+  // position is simply worldX - scrollOffset, which drifts left as he goes.
   const NOSE_X_IN_VIEWBOX = 346;
-  const NOSE_OFFSET_FACING_RIGHT = ((NOSE_X_IN_VIEWBOX - VIEWBOX_X) / VIEWBOX_WIDTH) * CAT_WIDTH;
-  const NOSE_OFFSET_FACING_LEFT = CAT_WIDTH - NOSE_OFFSET_FACING_RIGHT;
+  const NOSE_OFFSET = ((NOSE_X_IN_VIEWBOX - VIEWBOX_X) / VIEWBOX_WIDTH) * CAT_WIDTH;
+  const OLLIE_LEFT_FRACTION = 0.16; // must match .walker's CSS "left"
 
-  function noseOffsetFor(f) {
-    return f === 1 ? NOSE_OFFSET_FACING_RIGHT : NOSE_OFFSET_FACING_LEFT;
+  function screenXFor(worldX) {
+    return worldX - scrollOffset;
   }
 
-  let posPx = 0;
-  let dir = 1;
-  let facing = 1;
+  let scrollOffset = 0;
   let state = 'patrol'; // 'patrol' | 'toTarget' | 'interacting'
-  let targetPx = null;
-  let targetType = null; // 'food' | 'post' | 'toy'
+  let targetWorldX = null;
+  let targetType = null; // 'food' | 'post' | 'toy' | 'greet' | 'bird'
   let pendingClickX = null;
   let lastTime = null;
   let actionTimeout;
-  let minPx = 0;
-  let maxPx = 0;
+  let minPx = 0; // leftmost click position (right at Ollie's nose)
+  let maxPx = 0; // rightmost click position (near the edge of the screen)
+  let noseScreenX = 0;
+
+  // ---- bird that lands on the grass every so often ----
+  const bird = document.getElementById('bird');
+  const BIRD_INTERVAL = 15000;
+  const BIRD_FLUTTER_DURATION = 1100;
+  const BIRD_STAY_DURATION = 4500;
+  const BIRD_LEAVE_ANIM_DURATION = 3600;
+  const REACTION_DURATION = 2200;
+  const BIRD_NOTICE_DISTANCE = 130; // px from his nose before he notices it
+  let birdActive = false;
+  let birdNoticed = false;
+  let birdWorldX = null;
+  let birdLeaveTimeout = null;
+
+  function spawnBird() {
+    if (birdActive) return; // don't overlap birds
+    birdActive = true;
+    birdNoticed = false;
+
+    const stageWidth = stage.getBoundingClientRect().width;
+    birdWorldX = scrollOffset + noseScreenX + stageWidth * (0.2 + Math.random() * 0.55);
+    bird.style.left = screenXFor(birdWorldX) + 'px';
+    bird.style.display = 'block';
+    bird.classList.remove('bird-leaving');
+    // reflow so the landing animation restarts cleanly if re-triggered
+    void bird.offsetWidth;
+    bird.classList.add('bird-landing');
+
+    // once he's touched down, fold the wings back in (stop the fast flap)
+    setTimeout(() => {
+      bird.classList.remove('bird-landing');
+    }, BIRD_FLUTTER_DURATION);
+
+    birdLeaveTimeout = setTimeout(() => {
+      bird.classList.add('bird-leaving');
+      setTimeout(() => {
+        bird.style.display = 'none';
+        bird.classList.remove('bird-leaving');
+        birdActive = false;
+        birdWorldX = null;
+      }, BIRD_LEAVE_ANIM_DURATION);
+    }, BIRD_STAY_DURATION);
+  }
+
+  function reactToBird() {
+    birdNoticed = true;
+    state = 'interacting';
+    targetType = 'bird';
+    catSvg.pauseAnimations();
+    bobber.classList.add('frozen');
+    catSvg.classList.add('surprised');
+    clearTimeout(actionTimeout);
+    actionTimeout = setTimeout(() => {
+      bobber.classList.remove('frozen');
+      catSvg.classList.remove('surprised');
+      catSvg.unpauseAnimations();
+      state = 'patrol';
+    }, REACTION_DURATION);
+  }
+
+  // first bird a little after load, then every 15s after that
+  setTimeout(spawnBird, 5000);
+  setInterval(spawnBird, BIRD_INTERVAL);
+
+  // ---- "go fishing" sign, every 20s ----
+  const SIGN_INTERVAL = 20000;
+  const fishingScene = document.getElementById('fishingScene');
+
+  function spawnSign() {
+    if (state !== 'patrol') return; // he's busy — the next 20s cycle will try again
+
+    const stageWidth = stage.getBoundingClientRect().width;
+    targetWorldX = scrollOffset + noseScreenX + stageWidth * 0.55;
+    sign.style.left = screenXFor(targetWorldX) + 'px';
+    sign.style.display = 'block';
+
+    targetType = 'sign';
+    state = 'toTarget';
+
+    bobber.classList.remove('eating', 'scratching', 'playing', 'frozen');
+    catSvg.classList.remove('eating', 'greeting', 'surprised');
+    frontFaceWavePaw.removeAttribute('transform');
+    catSvg.unpauseAnimations();
+  }
+
+  setInterval(spawnSign, SIGN_INTERVAL);
+
+  document.getElementById('btnKeepWalking').addEventListener('click', (e) => {
+    e.stopPropagation();
+    clearAllProps();
+    catSvg.unpauseAnimations();
+    state = 'patrol';
+  });
+
+  // takes him to a separate fishing scene — just the land/pond scenery for
+  // now, the actual fishing interaction comes later
+  document.getElementById('btnGoFish').addEventListener('click', (e) => {
+    e.stopPropagation();
+    fishPrompt.classList.remove('show');
+    sign.style.display = 'none';
+    fishingScene.classList.add('show');
+  });
+
+  document.getElementById('fishingBackBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    fishingScene.classList.remove('show');
+    clearAllProps();
+    catSvg.unpauseAnimations();
+    state = 'patrol';
+  });
+
+  // ---- gentle animated ripples across the pond ----
+  const waterRipples = document.getElementById('waterRipples');
+
+  function spawnRipple() {
+    if (!fishingScene.classList.contains('show')) return;
+    const el = document.createElement('div');
+    el.className = 'ripple';
+    el.style.left = (5 + Math.random() * 90) + '%';
+    el.style.top = (15 + Math.random() * 70) + '%';
+    el.addEventListener('animationend', () => el.remove());
+    waterRipples.appendChild(el);
+  }
+
+  setInterval(spawnRipple, 850);
 
   const ACTION_DURATION = { food: 3000, post: 2800, toy: 3500 };
+  const ARRIVAL_GAP = { sign: 130 }; // how far short of the prop he stops, in px
 
   function recalcBounds() {
     const stageWidth = stage.getBoundingClientRect().width;
-    minPx = stageWidth * 0.04;
-    maxPx = stageWidth * 0.68;
+    const ollieLeftPx = stageWidth * OLLIE_LEFT_FRACTION;
+    noseScreenX = ollieLeftPx + NOSE_OFFSET;
+    minPx = noseScreenX;
+    maxPx = stageWidth * 0.92;
   }
   recalcBounds();
   window.addEventListener('resize', recalcBounds);
-
-  posPx = minPx;
 
   const SPEED_PX = 90; // pixels per second
 
@@ -769,6 +1243,8 @@
     post.style.display = 'none';
     yarn.style.display = 'none';
     yarn.classList.remove('active');
+    sign.style.display = 'none';
+    fishPrompt.classList.remove('show');
   }
 
   function chooseTarget(type) {
@@ -779,20 +1255,17 @@
     clearTimeout(actionTimeout);
 
     const propEl = props[type];
-    propEl.style.left = pendingClickX + 'px';
+    // remember where this prop sits in the world (not just on screen) so it
+    // keeps scrolling toward him at the right spot as he "walks"
+    targetWorldX = pendingClickX + scrollOffset;
+    propEl.style.left = screenXFor(targetWorldX) + 'px';
     propEl.style.display = 'block';
 
-    targetPx = pendingClickX;
     targetType = type;
-    // decide facing once, when the prop is placed — recalculating this every
-    // frame based on the box edge (rather than the nose) caused it to flip
-    // direction mid-walk right as the cat got close, which glitched the
-    // approach and made it miss the "arrived" check entirely
-    facing = (targetPx - posPx) >= 0 ? 1 : -1;
     state = 'toTarget';
 
-    bobber.classList.remove('eating', 'scratching', 'playing');
-    catSvg.classList.remove('eating', 'greeting');
+    bobber.classList.remove('eating', 'scratching', 'playing', 'frozen');
+    catSvg.classList.remove('eating', 'greeting', 'surprised');
     frontFaceWavePaw.removeAttribute('transform');
     catSvg.unpauseAnimations();
   }
@@ -807,17 +1280,30 @@
     lastTime = timestamp;
 
     if (state === 'patrol') {
-      posPx += dir * SPEED_PX * dt;
-      if (posPx >= maxPx) { posPx = maxPx; dir = -1; facing = -1; }
-      if (posPx <= minPx) { posPx = minPx; dir = 1; facing = 1; }
+      scrollOffset += SPEED_PX * dt;
+
+      // notice the bird once it's scrolled close enough ahead of him — he
+      // always faces forward now, so it's proximity that matters, not which
+      // way he's turned
+      if (birdActive && !birdNoticed && birdWorldX != null) {
+        const birdScreenX = screenXFor(birdWorldX);
+        if (birdScreenX - noseScreenX <= BIRD_NOTICE_DISTANCE) {
+          reactToBird();
+        }
+      }
     } else if (state === 'toTarget') {
-      const noseX = posPx + noseOffsetFor(facing);
-      const diff = targetPx - noseX;
+      // most props he walks right up to, but a bit of breathing room in
+      // front of the sign reads better than his nose touching it
+      const arrivalGap = ARRIVAL_GAP[targetType] || 0;
+      const stopScreenX = noseScreenX + arrivalGap;
+
+      const propScreenX = screenXFor(targetWorldX);
+      const diff = propScreenX - stopScreenX;
       const step = SPEED_PX * dt;
 
-      if (Math.abs(diff) <= step) {
-        // snap so the nose (not the box edge) lands exactly on the prop
-        posPx = targetPx - noseOffsetFor(facing);
+      if (diff <= step) {
+        // snap so he stops exactly the right distance short of the prop
+        scrollOffset = targetWorldX - stopScreenX;
         state = 'interacting';
 
         if (targetType === 'food') {
@@ -832,19 +1318,26 @@
           bobber.classList.add('playing');
           yarn.classList.add('active');
           catSvg.pauseAnimations();
+        } else if (targetType === 'sign') {
+          // he stops right at the sign and waits for a choice — no auto-timer
+          catSvg.pauseAnimations();
+          fishPrompt.classList.add('show');
         }
 
-        actionTimeout = setTimeout(() => {
-          clearAllProps();
-          bobber.classList.remove('eating', 'scratching', 'playing');
-          catSvg.classList.remove('eating');
-          catSvg.unpauseAnimations();
-          state = 'patrol';
-          dir = facing;
-        }, ACTION_DURATION[targetType] || 3000);
+        if (targetType !== 'sign') {
+          actionTimeout = setTimeout(() => {
+            clearAllProps();
+            bobber.classList.remove('eating', 'scratching', 'playing');
+            catSvg.classList.remove('eating');
+            catSvg.unpauseAnimations();
+            state = 'patrol';
+          }, ACTION_DURATION[targetType] || 3000);
+        }
       } else {
-        posPx += facing * step;
+        scrollOffset += step;
       }
+
+      props[targetType].style.left = screenXFor(targetWorldX) + 'px';
     }
 
     if (state === 'interacting' && targetType === 'post') {
@@ -866,13 +1359,76 @@
         'rotate(' + (-20 + wave) + ' ' + FRONT_FACE_WAVE_PIVOT.x + ' ' + FRONT_FACE_WAVE_PIVOT.y + ')');
     }
 
-    walker.style.left = posPx + 'px';
-    walker.style.transform = 'scaleX(' + facing + ')';
+    // the bird keeps drifting toward him as the world scrolls, same as any prop
+    if (birdActive && birdWorldX != null) {
+      bird.style.left = screenXFor(birdWorldX) + 'px';
+    }
+
+    updateTrees();
 
     requestAnimationFrame(frame);
   }
 
   requestAnimationFrame(frame);
+
+  // ---- background trees, scrolling past as he walks ----
+  const treeLayer = document.getElementById('treeLayer');
+  const TREE_PARALLAX = 0.55; // slower than the foreground for a sense of depth
+  const TREE_MIN_GAP = 40;
+  const TREE_MAX_GAP = 90;
+  const TREE_AHEAD_BUFFER = 400;
+  const TREE_GREENS = ['#4f9650', '#5aa25c', '#458a48', '#63ac63'];
+  let trees = [];
+  let nextTreeWorldX = 150;
+
+  function treeScreenX(worldX) {
+    return worldX - scrollOffset * TREE_PARALLAX;
+  }
+
+  function treeSVG(scale) {
+    // tall, narrow silhouette (viewBox is much taller than it is wide) so
+    // scaling it up makes it reach toward the clouds without getting
+    // comically fat
+    const color = TREE_GREENS[Math.floor(Math.random() * TREE_GREENS.length)];
+    const w = Math.round(60 * scale), h = Math.round(220 * scale);
+    return `
+      <svg viewBox="0 0 60 220" width="${w}" height="${h}">
+        <rect x="27" y="195" width="6" height="25" fill="#7a5230"/>
+        <path d="M 30 5 L 42 55 L 18 55 Z" fill="${color}"/>
+        <path d="M 30 40 L 46 95 L 14 95 Z" fill="${color}"/>
+        <path d="M 30 80 L 48 140 L 12 140 Z" fill="${color}"/>
+        <path d="M 30 120 L 50 195 L 10 195 Z" fill="${color}"/>
+      </svg>`;
+  }
+
+  function spawnTree(worldX) {
+    const el = document.createElement('div');
+    el.className = 'tree';
+    const scale = 1.4 + Math.random() * 1.0;
+    el.innerHTML = treeSVG(scale);
+    treeLayer.appendChild(el);
+    trees.push({ worldX, el });
+  }
+
+  function updateTrees() {
+    const stageWidth = stage.getBoundingClientRect().width;
+    const aheadEdge = scrollOffset * TREE_PARALLAX + stageWidth + TREE_AHEAD_BUFFER;
+    while (nextTreeWorldX < aheadEdge) {
+      spawnTree(nextTreeWorldX);
+      nextTreeWorldX += TREE_MIN_GAP + Math.random() * (TREE_MAX_GAP - TREE_MIN_GAP);
+    }
+
+    for (let i = trees.length - 1; i >= 0; i--) {
+      const t = trees[i];
+      const screenX = treeScreenX(t.worldX);
+      if (screenX < -150) {
+        t.el.remove();
+        trees.splice(i, 1);
+        continue;
+      }
+      t.el.style.left = screenX + 'px';
+    }
+  }
 
   // ---- sky critters ----
   const skyLayer = document.getElementById('skyLayer');
@@ -948,36 +1504,58 @@
   const rainLayer = document.getElementById('rainLayer');
   const weatherOverlay = document.getElementById('weatherOverlay');
   const RAIN_DURATION = 10000;
+  const MAX_RAIN_LEVEL = 5;
 
   let rainInterval = null;
   let rainStopTimeout = null;
   let isRaining = false;
+  let rainLevel = 0; // each cloud click bumps this up, making it heavier/darker
 
   function spawnRaindrop() {
-    const drop = document.createElement('div');
-    drop.className = 'raindrop';
-    drop.style.left = Math.random() * 100 + '%';
-    drop.style.animationDuration = (0.5 + Math.random() * 0.4) + 's';
-    drop.addEventListener('animationend', () => drop.remove());
-    rainLayer.appendChild(drop);
+    // heavier rain also means more drops fall per tick, not just faster ticks
+    const dropsThisTick = 1 + Math.floor(rainLevel / 2);
+    for (let i = 0; i < dropsThisTick; i++) {
+      const drop = document.createElement('div');
+      drop.className = 'raindrop';
+      drop.style.left = Math.random() * 100 + '%';
+      drop.style.animationDuration = (0.4 + Math.random() * 0.35) + 's';
+      drop.addEventListener('animationend', () => drop.remove());
+      rainLayer.appendChild(drop);
+    }
+  }
+
+  function rainIntervalForLevel(level) {
+    return Math.max(48 - (level - 1) * 8, 14); // faster spawn ticks = heavier rain
+  }
+
+  function overlayAlphaForLevel(level) {
+    return Math.min(0.32 + (level - 1) * 0.13, 0.85); // darker scenery per level
+  }
+
+  function applyRainIntensity() {
+    weatherOverlay.style.background = 'rgba(35, 48, 72, ' + overlayAlphaForLevel(rainLevel) + ')';
+    clearInterval(rainInterval);
+    rainInterval = setInterval(spawnRaindrop, rainIntervalForLevel(rainLevel));
   }
 
   function startRain() {
-    if (isRaining) {
-      // already raining — clicking another cloud just extends the timer
-      clearTimeout(rainStopTimeout);
-      rainStopTimeout = setTimeout(stopRain, RAIN_DURATION);
-      return;
+    // each cloud clicked makes it heavier/darker, up to a cap, and always
+    // resets the 10s countdown before it clears up
+    rainLevel = Math.min(rainLevel + 1, MAX_RAIN_LEVEL);
+    clearTimeout(rainStopTimeout);
+
+    if (!isRaining) {
+      isRaining = true;
+      weatherOverlay.classList.add('show');
+      catSvg.classList.add('raining');
     }
-    isRaining = true;
-    weatherOverlay.classList.add('show');
-    catSvg.classList.add('raining');
-    rainInterval = setInterval(spawnRaindrop, 45);
+    applyRainIntensity();
     rainStopTimeout = setTimeout(stopRain, RAIN_DURATION);
   }
 
   function stopRain() {
     isRaining = false;
+    rainLevel = 0;
     clearInterval(rainInterval);
     weatherOverlay.classList.remove('show');
     catSvg.classList.remove('raining');
