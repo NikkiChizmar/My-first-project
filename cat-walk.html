@@ -517,8 +517,8 @@
     position: absolute;
     left: 2%;
     bottom: 14%; /* his feet (viewBox y=400) land exactly on the ground line */
-    width: 270px;
-    height: 360px;
+    width: 180px;
+    height: 240px;
     z-index: 1;
   }
   .fishing-ollie svg {
@@ -946,10 +946,11 @@
         <path d="M 285 145 C 305 130, 322 107, 330 79" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
         <ellipse cx="332" cy="76" rx="14" ry="10" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
 
-        <!-- fishing rod: out from his paw, line dropping into the pond -->
-        <path d="M 332 76 L 370 13" stroke="#5c3a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 370 13 L 485 318" stroke="#3a2418" stroke-width="1.5" fill="none"/>
-        <circle cx="485" cy="318" r="6" fill="#e07a9e" stroke="#231a14" stroke-width="2"/>
+        <!-- fishing rod: angled further out so the line reaches the deeper
+             part of the pond instead of the shallow water near the shore -->
+        <path d="M 332 76 L 392 4" stroke="#5c3a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <path d="M 392 4 L 610 335" stroke="#3a2418" stroke-width="1.5" fill="none"/>
+        <circle cx="610" cy="335" r="6" fill="#e07a9e" stroke="#231a14" stroke-width="2"/>
 
         <!-- fishing boots -->
         <path d="M 185 290 L 185 306 C 181 310, 180 316, 185 320 C 189 323, 201 323, 205 320 C 210 316, 209 310, 205 306 L 205 290 Z"
