@@ -1103,8 +1103,8 @@
           <animate id="fishingLineCatch" attributeName="d" begin="indefinite" dur="2s" fill="freeze"
             keyTimes="0;0.2;0.4;0.6;0.8;0.9;1"
             values="M 392 4 L 930 345;M 392 4 L 740 235;M 392 4 L 560 150;M 392 4 L 460 100;M 392 4 L 432 80;M 392 4 L 448 88;M 392 4 L 435 82"/>
-          <!-- once he's held it up for a moment, the line relaxes back down
-               into the water as the fish fades away -->
+          <!-- once he's held it up and the fish has fully faded away, the
+               line drops back down into the water -->
           <animate id="fishingLineRelease" attributeName="d" begin="indefinite" dur="0.7s"
             values="M 392 4 L 435 82;M 392 4 L 930 345"/>
         </path>
@@ -1465,7 +1465,7 @@
   const fishingLineRelease = document.getElementById('fishingLineRelease');
   const BIG_FISH_REEL_DURATION = 2000; // ms, matches dur="2s" above
   const BIG_FISH_HOLD_DURATION = 1300; // ms he holds it up before letting go
-  const BIG_FISH_RELEASE_DURATION = 700; // ms, matches dur="0.7s" above
+  const BIG_FISH_FADE_DURATION = 700; // ms, matches big-fish-fade's 0.7s CSS animation
   let bigFishReleaseTimeout = null;
   let bigFishResetTimeout = null;
 
@@ -1538,15 +1538,15 @@
     // keyframes, so it stays attached to its mouth the whole way in
     fishingLineCatch.beginElement();
 
-    // after he's held it up for a bit, let go — the fish fades out while
-    // the line relaxes back down into the water
+    // after he's held it up for a bit, the fish fades out completely first
+    // — only once it's gone does the line drop back down into the water
     bigFishReleaseTimeout = setTimeout(() => {
       bigFishCatch.classList.remove('show');
       bigFishCatch.classList.add('fade-out');
-      fishingLineRelease.beginElement();
       bigFishResetTimeout = setTimeout(() => {
         bigFishCatch.classList.remove('fade-out');
-      }, BIG_FISH_RELEASE_DURATION);
+        fishingLineRelease.beginElement();
+      }, BIG_FISH_FADE_DURATION);
     }, BIG_FISH_REEL_DURATION + BIG_FISH_HOLD_DURATION);
   }
 
