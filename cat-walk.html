@@ -300,6 +300,20 @@
     bottom: 13%;
     transform: translateX(-50%);
   }
+  .leaf-pile-layer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .leaf-pile {
+    position: absolute;
+    bottom: 1%; /* sitting flat on the grass, not up on the ground's edge */
+    transform: translateX(-50%);
+  }
 
   .critter {
     position: absolute;
@@ -685,6 +699,7 @@
   <div class="caption">Ollie Sharp is on a walk 🐾</div>
   <div class="instructions">Click Ollie to say hi 👋 &nbsp;·&nbsp; Click the grass to give him food, a toy, or a scratching post 🐟🧶🐾</div>
   <div class="ground"></div>
+  <div class="leaf-pile-layer" id="leafPileLayer"></div>
 
   <div class="walker">
     <div class="bobber">
@@ -1801,11 +1816,19 @@
     }
 
     updateTrees();
+    updateLeafPiles();
 
     requestAnimationFrame(frame);
   }
 
   requestAnimationFrame(frame);
+
+  // ---- seasons: after he's been walking a while, things start turning
+  // fall — new trees come in fall colors and leaf piles start showing up
+  // on the grass. trees/piles already passed stay as they were. ----
+  const SEASON_FALL_DELAY = 30000; // ms of walking before fall starts
+  let seasonIsFall = false;
+  setTimeout(() => { seasonIsFall = true; }, SEASON_FALL_DELAY);
 
   // ---- background trees, scrolling past as he walks ----
   const treeLayer = document.getElementById('treeLayer');
@@ -1814,6 +1837,7 @@
   const TREE_MAX_GAP = 90;
   const TREE_AHEAD_BUFFER = 400;
   const TREE_GREENS = ['#4f9650', '#5aa25c', '#458a48', '#63ac63'];
+  const TREE_FALL_COLORS = ['#c96a2f', '#d9942f', '#b8452f', '#e0a83f', '#a8582f'];
   let trees = [];
   let nextTreeWorldX = 150;
 
@@ -1825,7 +1849,8 @@
     // tall, narrow silhouette (viewBox is much taller than it is wide) so
     // scaling it up makes it reach toward the clouds without getting
     // comically fat
-    const color = TREE_GREENS[Math.floor(Math.random() * TREE_GREENS.length)];
+    const palette = seasonIsFall ? TREE_FALL_COLORS : TREE_GREENS;
+    const color = palette[Math.floor(Math.random() * palette.length)];
     const w = Math.round(60 * scale), h = Math.round(220 * scale);
     return `
       <svg viewBox="0 0 60 220" width="${w}" height="${h}">
@@ -1863,6 +1888,60 @@
         continue;
       }
       t.el.style.left = screenX + 'px';
+    }
+  }
+
+  // ---- leaf piles on the grass, once it's turned fall ----
+  const leafPileLayer = document.getElementById('leafPileLayer');
+  const LEAF_MIN_GAP = 220;
+  const LEAF_MAX_GAP = 420;
+  const LEAF_AHEAD_BUFFER = 300;
+  let leafPiles = [];
+  let nextLeafWorldX = null; // set once fall starts, so piles begin appearing from that point on
+
+  function leafPileSVG(scale) {
+    const w = Math.round(50 * scale), h = Math.round(22 * scale);
+    return `
+      <svg viewBox="0 0 50 22" width="${w}" height="${h}">
+        <ellipse cx="25" cy="17" rx="22" ry="5" fill="#8a4a1f" opacity="0.35"/>
+        <ellipse cx="16" cy="13" rx="7" ry="4.5" fill="#e0943f" transform="rotate(-15 16 13)"/>
+        <ellipse cx="27" cy="10" rx="7" ry="4.5" fill="#c1522c" transform="rotate(10 27 10)"/>
+        <ellipse cx="34" cy="14" rx="6" ry="4" fill="#e8b23f" transform="rotate(-8 34 14)"/>
+        <ellipse cx="20" cy="16" rx="6" ry="4" fill="#d9942f" transform="rotate(6 20 16)"/>
+      </svg>`;
+  }
+
+  function spawnLeafPile(worldX) {
+    const el = document.createElement('div');
+    el.className = 'leaf-pile';
+    const scale = 0.9 + Math.random() * 0.6;
+    el.innerHTML = leafPileSVG(scale);
+    leafPileLayer.appendChild(el);
+    leafPiles.push({ worldX, el });
+  }
+
+  function updateLeafPiles() {
+    if (!seasonIsFall) return;
+    if (nextLeafWorldX === null) {
+      // start placing piles from just ahead of him, the moment fall begins
+      nextLeafWorldX = scrollOffset + 200;
+    }
+    const stageWidth = stage.getBoundingClientRect().width;
+    const aheadEdge = scrollOffset + stageWidth + LEAF_AHEAD_BUFFER;
+    while (nextLeafWorldX < aheadEdge) {
+      spawnLeafPile(nextLeafWorldX);
+      nextLeafWorldX += LEAF_MIN_GAP + Math.random() * (LEAF_MAX_GAP - LEAF_MIN_GAP);
+    }
+
+    for (let i = leafPiles.length - 1; i >= 0; i--) {
+      const p = leafPiles[i];
+      const screenX = screenXFor(p.worldX);
+      if (screenX < -100) {
+        p.el.remove();
+        leafPiles.splice(i, 1);
+        continue;
+      }
+      p.el.style.left = screenX + 'px';
     }
   }
 
