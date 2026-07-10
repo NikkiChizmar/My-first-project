@@ -596,6 +596,38 @@
   #fishingBobber.bite-active {
     animation: bobber-bite-pulse 0.55s ease-in-out infinite;
   }
+  /* the huge fish Ollie reels in on a successful catch. these keyframe
+     percentages/points match #fishingLineCatch's keyTimes/values exactly
+     (in JS-config terms too, see BIG_FISH_POINTS) so the line's end always
+     lands right on the fish's mouth (local 0,0 in its own coordinates) as
+     it comes in, instead of the two drifting apart. */
+  #bigFishCatch {
+    opacity: 0;
+    transform: translate(930px, 345px) scale(0.3) rotate(-12deg);
+    transform-origin: 0 0;
+  }
+  #bigFishCatch.show {
+    animation: big-fish-catch 2s linear forwards;
+  }
+  #bigFishCatch.fade-out {
+    animation: big-fish-fade 0.7s ease-in forwards;
+  }
+  /* rotation swings from a near-horizontal thrash (as he's first hooked)
+     to hanging straight down (-90deg) by the time he's held up — mouth
+     stays pinned to the line either way since it's the rotation origin */
+  @keyframes big-fish-catch {
+    0%   { transform: translate(930px, 345px) scale(0.30) rotate(-12deg); opacity: 0; }
+    20%  { transform: translate(740px, 235px) scale(0.55) rotate(-30deg); opacity: 1; }
+    40%  { transform: translate(560px, 150px) scale(0.85) rotate(-55deg); opacity: 1; }
+    60%  { transform: translate(460px, 100px) scale(1.15) rotate(-75deg); opacity: 1; }
+    80%  { transform: translate(432px, 80px)  scale(1.40) rotate(-96deg); opacity: 1; }
+    90%  { transform: translate(448px, 88px)  scale(1.30) rotate(-82deg); opacity: 1; }
+    100% { transform: translate(435px, 82px)  scale(1.35) rotate(-90deg); opacity: 1; }
+  }
+  @keyframes big-fish-fade {
+    0%   { transform: translate(435px, 82px) scale(1.35) rotate(-90deg); opacity: 1; }
+    100% { transform: translate(435px, 82px) scale(1.35) rotate(-90deg); opacity: 0; }
+  }
   .fishing-catch-msg {
     position: absolute;
     top: 8%;
@@ -1065,6 +1097,16 @@
                tugging his arm and rod along with it -->
           <animate id="fishingLineTug" attributeName="d" begin="indefinite" dur="1.8s"
             values="M 392 4 L 930 345;M 401 10 L 981 377;M 389 2 L 911 333;M 397 7 L 960 364;M 392 4 L 930 345"/>
+          <!-- reels the line in as a catch is landed — the far end here
+               uses the exact same points/timing as the #bigFishCatch CSS
+               keyframes below, so the line stays attached to its mouth -->
+          <animate id="fishingLineCatch" attributeName="d" begin="indefinite" dur="2s" fill="freeze"
+            keyTimes="0;0.2;0.4;0.6;0.8;0.9;1"
+            values="M 392 4 L 930 345;M 392 4 L 740 235;M 392 4 L 560 150;M 392 4 L 460 100;M 392 4 L 432 80;M 392 4 L 448 88;M 392 4 L 435 82"/>
+          <!-- once he's held it up for a moment, the line relaxes back down
+               into the water as the fish fades away -->
+          <animate id="fishingLineRelease" attributeName="d" begin="indefinite" dur="0.7s"
+            values="M 392 4 L 435 82;M 392 4 L 930 345"/>
         </path>
         <circle id="fishingBobber" cx="930" cy="345" r="6" fill="#e07a9e" stroke="#231a14" stroke-width="2">
           <animate id="fishingBobberTugX" attributeName="cx" begin="indefinite" dur="1.8s" values="930;981;911;960;930"/>
@@ -1076,6 +1118,22 @@
           <animate id="fishingBobberHitTugX" attributeName="cx" begin="indefinite" dur="1.8s" values="930;981;911;960;930"/>
           <animate id="fishingBobberHitTugY" attributeName="cy" begin="indefinite" dur="1.8s" values="345;377;333;364;345"/>
         </circle>
+
+        <!-- huge fish reveal: hidden until a catch lands, then reels in on
+             the line (see fishingLineCatch below, which tracks this same
+             group's position so the hook stays attached to its mouth the
+             whole way in), holds up for a moment, then lets go and fades.
+             local (0,0) here IS the mouth/hook point, so scaling/rotating
+             the outer group never pulls it off the line's end. -->
+        <g id="bigFishCatch">
+          <g transform="scale(2.4)">
+            <path d="M -30 0 L -44 -8 L -44 8 Z" fill="#d99a2b" stroke="#231a14" stroke-width="2.5" stroke-linejoin="round"/>
+            <ellipse cx="-14" cy="0" rx="14" ry="8" fill="#f4c752" stroke="#231a14" stroke-width="2.5"/>
+            <path d="M -18 -6 L -14 -15 L -10 -6 Z" fill="#d99a2b" stroke="#231a14" stroke-width="2.5" stroke-linejoin="round"/>
+            <circle cx="-6" cy="-3" r="2.2" fill="#231a14"/>
+            <path d="M -11 3 Q -6 7 -2 3" stroke="#231a14" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
 
         <!-- fishing boots -->
         <path d="M 185 290 L 185 306 C 181 310, 180 316, 185 320 C 189 323, 201 323, 205 320 C 210 316, 209 310, 205 306 L 205 290 Z"
@@ -1402,6 +1460,14 @@
   const fishingBobber = document.getElementById('fishingBobber');
   const fishingBobberHit = document.getElementById('fishingBobberHit');
   const fishingCatchMsg = document.getElementById('fishingCatchMsg');
+  const bigFishCatch = document.getElementById('bigFishCatch');
+  const fishingLineCatch = document.getElementById('fishingLineCatch');
+  const fishingLineRelease = document.getElementById('fishingLineRelease');
+  const BIG_FISH_REEL_DURATION = 2000; // ms, matches dur="2s" above
+  const BIG_FISH_HOLD_DURATION = 1300; // ms he holds it up before letting go
+  const BIG_FISH_RELEASE_DURATION = 700; // ms, matches dur="0.7s" above
+  let bigFishReleaseTimeout = null;
+  let bigFishResetTimeout = null;
 
   const BITE_TUG_DURATION = 1800; // ms, matches each animate's dur="1.8s"
   const BITE_ESCALATE_STEP = 0.5;
@@ -1458,11 +1524,38 @@
     catchMsgTimeout = setTimeout(() => fishingCatchMsg.classList.remove('show'), 1800);
   }
 
+  function playBigFishCatch() {
+    clearTimeout(bigFishReleaseTimeout);
+    clearTimeout(bigFishResetTimeout);
+
+    // remove + force reflow + re-add so the CSS animation restarts even if
+    // it's already mid-way from a previous catch
+    bigFishCatch.classList.remove('show', 'fade-out');
+    void bigFishCatch.offsetWidth;
+    bigFishCatch.classList.add('show');
+
+    // the line reels in on the exact same points/timing as the fish's CSS
+    // keyframes, so it stays attached to its mouth the whole way in
+    fishingLineCatch.beginElement();
+
+    // after he's held it up for a bit, let go — the fish fades out while
+    // the line relaxes back down into the water
+    bigFishReleaseTimeout = setTimeout(() => {
+      bigFishCatch.classList.remove('show');
+      bigFishCatch.classList.add('fade-out');
+      fishingLineRelease.beginElement();
+      bigFishResetTimeout = setTimeout(() => {
+        bigFishCatch.classList.remove('fade-out');
+      }, BIG_FISH_RELEASE_DURATION);
+    }, BIG_FISH_REEL_DURATION + BIG_FISH_HOLD_DURATION);
+  }
+
   function endBite(caught) {
     biteActive = false;
     clearInterval(biteEscalateTimer);
     fishingBobber.classList.remove('bite-active');
     showCatchMessage(caught ? 'Got one! 🐟' : 'It got away...');
+    if (caught) playBigFishCatch();
   }
 
   function startBite() {
