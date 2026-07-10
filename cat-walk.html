@@ -26,6 +26,7 @@
     height: 14%;
     background-color: #cfe2b8;
     border-top: 3px solid #b7cf9e;
+    transition: background-color 1s linear; /* smooths the winter color shift */
   }
 
   .caption {
@@ -313,6 +314,43 @@
     position: absolute;
     bottom: 1%; /* sitting flat on the grass, not up on the ground's edge */
     transform: translateX(-50%);
+  }
+
+  .snow-pile-layer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .snow-pile {
+    position: absolute;
+    bottom: 0.5%;
+    transform: translateX(-50%);
+  }
+
+  .snow-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 6;
+  }
+  .snowflake {
+    position: absolute;
+    top: -20px;
+    border-radius: 50%;
+    background: #ffffff;
+    animation: snow-fall linear forwards;
+  }
+  @keyframes snow-fall {
+    0%   { transform: translate(0, 0); }
+    25%  { transform: translate(15px, 27vh); }
+    50%  { transform: translate(-10px, 55vh); }
+    75%  { transform: translate(12px, 80vh); }
+    100% { transform: translate(0, 105vh); }
   }
 
   .critter {
@@ -700,6 +738,8 @@
   <div class="instructions">Click Ollie to say hi 👋 &nbsp;·&nbsp; Click the grass to give him food, a toy, or a scratching post 🐟🧶🐾</div>
   <div class="ground"></div>
   <div class="leaf-pile-layer" id="leafPileLayer"></div>
+  <div class="snow-pile-layer" id="snowPileLayer"></div>
+  <div class="snow-layer" id="snowLayer"></div>
 
   <div class="walker">
     <div class="bobber">
@@ -1835,6 +1875,7 @@
 
     updateTrees();
     updateLeafPiles();
+    updateSnowPiles();
 
     requestAnimationFrame(frame);
   }
@@ -1843,20 +1884,28 @@
 
   // ---- seasons: after he's been walking a while, things gradually turn
   // fall — a fall tree or leaf pile sprinkled in here and there at first,
-  // getting more common the longer he walks, until it's fully fall.
-  // trees/piles already placed stay as they were. ----
-  const SEASON_FALL_START = 10000; // ms before fall colors start sprinkling in
-  const SEASON_FALL_FULL = 75000;  // ms before it's fully fall — still eased
-                                    // (see smoothstep below) so it builds up
-                                    // gradually rather than flipping hard
+  // getting more common the longer he walks, until it's fully fall. after
+  // fall's had a while to settle in, winter starts the same way: a snowy
+  // tree here and there, snow piles on the ground, and it eventually
+  // starts snowing for real. trees/piles already placed stay as they were. ----
+  const SEASON_FALL_START = 10000;    // ms before fall colors start sprinkling in
+  const SEASON_FALL_FULL = 75000;     // ms before it's fully fall
+  const SEASON_WINTER_START = 150000; // ms before winter starts sprinkling in
+  const SEASON_WINTER_FULL = 220000;  // ms before it's fully winter (snowing steadily)
   const pageLoadTime = Date.now();
 
-  function seasonProgress() {
-    const elapsed = Date.now() - pageLoadTime;
-    const t = Math.max(0, Math.min(1, (elapsed - SEASON_FALL_START) / (SEASON_FALL_FULL - SEASON_FALL_START)));
-    // smoothstep easing — eases in at the start and eases toward "fully
-    // fall" at the end, instead of a straight linear ramp
+  function smoothstep(t) {
     return t * t * (3 - 2 * t);
+  }
+
+  function fallProgress() {
+    const elapsed = Date.now() - pageLoadTime;
+    return smoothstep(Math.max(0, Math.min(1, (elapsed - SEASON_FALL_START) / (SEASON_FALL_FULL - SEASON_FALL_START))));
+  }
+
+  function winterProgress() {
+    const elapsed = Date.now() - pageLoadTime;
+    return smoothstep(Math.max(0, Math.min(1, (elapsed - SEASON_WINTER_START) / (SEASON_WINTER_FULL - SEASON_WINTER_START))));
   }
 
   // ---- background trees, scrolling past as he walks ----
@@ -1867,6 +1916,7 @@
   const TREE_AHEAD_BUFFER = 400;
   const TREE_GREENS = ['#4f9650', '#5aa25c', '#458a48', '#63ac63'];
   const TREE_FALL_COLORS = ['#c96a2f', '#d9942f', '#b8452f', '#e0a83f', '#a8582f'];
+  const TREE_WINTER_GREENS = ['#2f5a3f', '#345f44', '#294f38']; // darker, snow-dusted pine
   let trees = [];
   let nextTreeWorldX = 150;
 
@@ -1878,11 +1928,21 @@
     // tall, narrow silhouette (viewBox is much taller than it is wide) so
     // scaling it up makes it reach toward the clouds without getting
     // comically fat
-    // odds of any given new tree being a fall tree ramp up gradually — a
-    // rare one sprinkled in early on, most of them by the time it's "full fall"
-    const palette = Math.random() < seasonProgress() ? TREE_FALL_COLORS : TREE_GREENS;
+    // odds of any given new tree being fall/winter ramp up gradually — a
+    // rare one sprinkled in early on, most of them by the time each season
+    // is "fully" in. winter is checked first so it takes over from fall
+    // the same way fall took over from green.
+    const isWinter = Math.random() < winterProgress();
+    const palette = isWinter ? TREE_WINTER_GREENS
+      : Math.random() < fallProgress() ? TREE_FALL_COLORS
+      : TREE_GREENS;
     const color = palette[Math.floor(Math.random() * palette.length)];
     const w = Math.round(60 * scale), h = Math.round(220 * scale);
+    const snowCaps = isWinter ? `
+        <path d="M 30 5 L 36 22 L 24 22 Z" fill="#ffffff" opacity="0.9"/>
+        <path d="M 30 40 L 38 60 L 22 60 Z" fill="#ffffff" opacity="0.9"/>
+        <path d="M 30 80 L 40 102 L 20 102 Z" fill="#ffffff" opacity="0.9"/>
+        <path d="M 30 120 L 41 143 L 19 143 Z" fill="#ffffff" opacity="0.9"/>` : '';
     return `
       <svg viewBox="0 0 60 220" width="${w}" height="${h}">
         <rect x="27" y="195" width="6" height="25" fill="#7a5230"/>
@@ -1890,6 +1950,7 @@
         <path d="M 30 40 L 46 95 L 14 95 Z" fill="${color}"/>
         <path d="M 30 80 L 48 140 L 12 140 Z" fill="${color}"/>
         <path d="M 30 120 L 50 195 L 10 195 Z" fill="${color}"/>
+        ${snowCaps}
       </svg>`;
   }
 
@@ -1998,27 +2059,35 @@
   }
 
   function updateLeafPiles() {
-    const progress = seasonProgress();
-    if (progress <= 0) return;
-    if (nextLeafWorldX === null) {
-      // start considering spots for piles from just ahead of him, the
-      // moment fall starts sprinkling in
-      nextLeafWorldX = scrollOffset + 200;
-    }
-    const stageWidth = stage.getBoundingClientRect().width;
-    const aheadEdge = scrollOffset + stageWidth + LEAF_AHEAD_BUFFER;
-    while (nextLeafWorldX < aheadEdge) {
-      // only some spots actually get a pile — more of them do as it gets
-      // further into fall, so they show up sparse at first, then everywhere
-      if (Math.random() < progress) {
-        spawnLeafPile(nextLeafWorldX);
+    // once it's fully winter, no new leaf piles at all — they'd be buried
+    // under snow by then. before that, fewer of them show up the further
+    // winter has already crept in. this only gates SPAWNING new ones —
+    // any already on screen still need to keep scrolling/getting cleaned
+    // up below regardless of season, or they'd freeze in place on screen.
+    const isFullWinter = winterProgress() >= 1;
+    const progress = fallProgress() * (1 - winterProgress());
+
+    if (!isFullWinter && progress > 0) {
+      if (nextLeafWorldX === null) {
+        // start considering spots for piles from just ahead of him, the
+        // moment fall starts sprinkling in
+        nextLeafWorldX = scrollOffset + 200;
       }
-      // irregular gaps instead of a steady rhythm: often the next spot is
-      // right nearby (little clusters/clumps of leaves), sometimes it's a
-      // long stretch of bare grass before the next one
-      nextLeafWorldX += Math.random() < 0.4
-        ? 45 + Math.random() * 100
-        : 260 + Math.random() * 420;
+      const stageWidth = stage.getBoundingClientRect().width;
+      const aheadEdge = scrollOffset + stageWidth + LEAF_AHEAD_BUFFER;
+      while (nextLeafWorldX < aheadEdge) {
+        // only some spots actually get a pile — more of them do as it gets
+        // further into fall, so they show up sparse at first, then everywhere
+        if (Math.random() < progress) {
+          spawnLeafPile(nextLeafWorldX);
+        }
+        // irregular gaps instead of a steady rhythm: often the next spot is
+        // right nearby (little clusters/clumps of leaves), sometimes it's a
+        // long stretch of bare grass before the next one
+        nextLeafWorldX += Math.random() < 0.4
+          ? 45 + Math.random() * 100
+          : 260 + Math.random() * 420;
+      }
     }
 
     for (let i = leafPiles.length - 1; i >= 0; i--) {
@@ -2032,6 +2101,104 @@
       p.el.style.left = screenX + 'px';
     }
   }
+
+  // ---- snow piles on the ground, once winter arrives ----
+  const snowPileLayer = document.getElementById('snowPileLayer');
+  const SNOW_PILE_AHEAD_BUFFER = 300;
+  let snowPiles = [];
+  let nextSnowPileWorldX = null;
+
+  function snowPileSVG(scale) {
+    const w = Math.round(60 * scale), h = Math.round(30 * scale);
+    return `
+      <svg viewBox="0 0 60 30" width="${w}" height="${h}">
+        <ellipse cx="30" cy="24" rx="26" ry="6" fill="#dde8f2"/>
+        <ellipse cx="18" cy="18" rx="15" ry="9" fill="#ffffff"/>
+        <ellipse cx="34" cy="14" rx="17" ry="10" fill="#ffffff"/>
+        <ellipse cx="46" cy="19" rx="12" ry="8" fill="#f2f7fb"/>
+        <ellipse cx="26" cy="12" rx="8" ry="5" fill="#ffffff" opacity="0.9"/>
+      </svg>`;
+  }
+
+  function spawnSnowPile(worldX) {
+    const el = document.createElement('div');
+    el.className = 'snow-pile';
+    const scale = 1.2 + Math.random() * 1.1;
+    el.innerHTML = snowPileSVG(scale);
+    snowPileLayer.appendChild(el);
+    snowPiles.push({ worldX, el });
+  }
+
+  function updateSnowPiles() {
+    const progress = winterProgress();
+    if (progress <= 0) return;
+    if (nextSnowPileWorldX === null) {
+      nextSnowPileWorldX = scrollOffset + 200;
+    }
+    const stageWidth = stage.getBoundingClientRect().width;
+    const aheadEdge = scrollOffset + stageWidth + SNOW_PILE_AHEAD_BUFFER;
+    while (nextSnowPileWorldX < aheadEdge) {
+      if (Math.random() < progress) {
+        spawnSnowPile(nextSnowPileWorldX);
+      }
+      nextSnowPileWorldX += Math.random() < 0.4
+        ? 60 + Math.random() * 120
+        : 280 + Math.random() * 440;
+    }
+
+    for (let i = snowPiles.length - 1; i >= 0; i--) {
+      const p = snowPiles[i];
+      const screenX = screenXFor(p.worldX);
+      if (screenX < -100) {
+        p.el.remove();
+        snowPiles.splice(i, 1);
+        continue;
+      }
+      p.el.style.left = screenX + 'px';
+    }
+  }
+
+  // ---- actual falling snow, once winter has properly arrived ----
+  const snowLayer = document.getElementById('snowLayer');
+
+  function spawnSnowflake() {
+    const flake = document.createElement('div');
+    flake.className = 'snowflake';
+    const size = 3 + Math.random() * 5;
+    flake.style.width = size + 'px';
+    flake.style.height = size + 'px';
+    flake.style.left = Math.random() * 100 + '%';
+    flake.style.opacity = 0.5 + Math.random() * 0.4;
+    flake.style.animationDuration = (5 + Math.random() * 5) + 's';
+    flake.addEventListener('animationend', () => flake.remove());
+    snowLayer.appendChild(flake);
+  }
+
+  function updateSnowfall() {
+    // snow starts light and gets steadier the deeper into winter it gets
+    const progress = winterProgress();
+    if (progress <= 0) return;
+    const flakesThisTick = Math.random() < progress ? 1 + Math.floor(progress * 2) : 0;
+    for (let i = 0; i < flakesThisTick; i++) spawnSnowflake();
+  }
+
+  setInterval(updateSnowfall, 220);
+
+  // the ground itself pales toward a snowy white the deeper into winter it gets
+  function updateGroundForWinter() {
+    const progress = winterProgress();
+    if (progress <= 0) {
+      ground.style.backgroundColor = '';
+      return;
+    }
+    // blend from the normal grass color toward snow-white
+    const from = [207, 226, 184]; // #cfe2b8
+    const to = [235, 242, 248];   // snowy white-blue
+    const mix = from.map((c, i) => Math.round(c + (to[i] - c) * progress));
+    ground.style.backgroundColor = `rgb(${mix[0]}, ${mix[1]}, ${mix[2]})`;
+  }
+
+  setInterval(updateGroundForWinter, 1000);
 
   // ---- sky critters ----
   const skyLayer = document.getElementById('skyLayer');
