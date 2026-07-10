@@ -1363,12 +1363,28 @@
   setTimeout(spawnBird, 5000);
   setInterval(spawnBird, BIRD_INTERVAL);
 
-  // ---- "go fishing" sign, every 20s ----
-  const SIGN_INTERVAL = 20000;
+  // ---- "go fishing" sign, at least 30s after he's done with the last one ----
+  const SIGN_INTERVAL = 30000;
   const fishingScene = document.getElementById('fishingScene');
+  let signTimer = null;
 
-  function spawnSign() {
-    if (state !== 'patrol') return; // he's busy — the next 20s cycle will try again
+  // schedules the NEXT sign relative to whenever he actually finishes with
+  // the current one (dismissing it, or coming back from the fishing scene)
+  // instead of a fixed clock from page load — that fixed-clock approach
+  // could let two signs land close together if an encounter ran long and
+  // ate into the next cycle
+  function scheduleSign() {
+    clearTimeout(signTimer);
+    signTimer = setTimeout(trySpawnSign, SIGN_INTERVAL);
+  }
+
+  function trySpawnSign() {
+    if (state !== 'patrol') {
+      // he's busy with something else — check back shortly instead of
+      // silently waiting out a whole extra cycle
+      signTimer = setTimeout(trySpawnSign, 2000);
+      return;
+    }
 
     const stageWidth = stage.getBoundingClientRect().width;
     targetWorldX = scrollOffset + noseScreenX + stageWidth * 0.55;
@@ -1384,13 +1400,14 @@
     catSvg.unpauseAnimations();
   }
 
-  setInterval(spawnSign, SIGN_INTERVAL);
+  scheduleSign();
 
   document.getElementById('btnKeepWalking').addEventListener('click', (e) => {
     e.stopPropagation();
     clearAllProps();
     catSvg.unpauseAnimations();
     state = 'patrol';
+    scheduleSign();
   });
 
   // takes him to a separate fishing scene — just the land/pond scenery for
@@ -1404,6 +1421,7 @@
 
   document.getElementById('fishingBackBtn').addEventListener('click', (e) => {
     e.stopPropagation();
+    scheduleSign();
     fishingScene.classList.remove('show');
     clearAllProps();
     catSvg.unpauseAnimations();
@@ -1827,10 +1845,10 @@
   // fall — a fall tree or leaf pile sprinkled in here and there at first,
   // getting more common the longer he walks, until it's fully fall.
   // trees/piles already placed stay as they were. ----
-  const SEASON_FALL_START = 15000;  // ms before fall colors start sprinkling in
-  const SEASON_FALL_FULL = 210000;  // ms before it's fully fall — stretched out
-                                     // so the shift happens over a long walk
-                                     // instead of feeling like a hard flip
+  const SEASON_FALL_START = 10000; // ms before fall colors start sprinkling in
+  const SEASON_FALL_FULL = 75000;  // ms before it's fully fall — still eased
+                                    // (see smoothstep below) so it builds up
+                                    // gradually rather than flipping hard
   const pageLoadTime = Date.now();
 
   function seasonProgress() {
