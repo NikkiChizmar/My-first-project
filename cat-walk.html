@@ -513,6 +513,67 @@
     0%   { transform: translate(-50%, -50%) scaleY(0.35) scale(0.2); opacity: 0.7; }
     100% { transform: translate(-50%, -50%) scaleY(0.35) scale(2.6); opacity: 0; }
   }
+  .fishing-fish-layer {
+    position: absolute;
+    right: 0;
+    bottom: 14%; /* sits right at the pond's surface line */
+    width: 58%;
+    height: 160px;
+    overflow: visible;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .leaping-fish {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 34px;
+    height: 20px;
+    transform: translate(-50%, 0);
+    animation: fish-leap 1.2s linear forwards;
+  }
+  .leaping-fish svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .leaping-fish.leap-b {
+    animation-name: fish-leap-rev;
+  }
+  @keyframes fish-leap {
+    /* points sampled off a real parabola (y = -4H*p*(1-p)) so the path itself
+       is a smooth rounded curve, like the umbrella dome, instead of two
+       straight segments meeting at a sharp peak. even time-steps along this
+       curve also naturally go fast off the water and slow at the top. */
+    0%   { transform: translate(calc(-50% + 0px), 0px) scale(0.50) rotate(-15deg); opacity: 0; }
+    10%  { transform: translate(calc(-50% + 16px), -36px) scale(0.65) rotate(-11.5deg); opacity: 0.8; }
+    15%  { opacity: 1; }
+    20%  { transform: translate(calc(-50% + 32px), -64px) scale(0.79) rotate(-8deg); opacity: 1; }
+    30%  { transform: translate(calc(-50% + 48px), -84px) scale(0.90) rotate(-4.5deg); opacity: 1; }
+    40%  { transform: translate(calc(-50% + 64px), -96px) scale(0.98) rotate(-1deg); opacity: 1; }
+    50%  { transform: translate(calc(-50% + 80px), -100px) scale(1.00) rotate(2.5deg); opacity: 1; }
+    60%  { transform: translate(calc(-50% + 96px), -96px) scale(0.98) rotate(6deg); opacity: 1; }
+    70%  { transform: translate(calc(-50% + 112px), -84px) scale(0.90) rotate(9.5deg); opacity: 1; }
+    80%  { transform: translate(calc(-50% + 128px), -64px) scale(0.79) rotate(13deg); opacity: 1; }
+    85%  { opacity: 1; }
+    90%  { transform: translate(calc(-50% + 144px), -36px) scale(0.65) rotate(16.5deg); opacity: 0.8; }
+    100% { transform: translate(calc(-50% + 160px), 0px) scale(0.50) rotate(20deg); opacity: 0; }
+  }
+  @keyframes fish-leap-rev {
+    0%   { transform: translate(calc(-50% - 0px), 0px) scale(0.50) rotate(15deg); opacity: 0; }
+    10%  { transform: translate(calc(-50% - 16px), -36px) scale(0.65) rotate(11.5deg); opacity: 0.8; }
+    15%  { opacity: 1; }
+    20%  { transform: translate(calc(-50% - 32px), -64px) scale(0.79) rotate(8deg); opacity: 1; }
+    30%  { transform: translate(calc(-50% - 48px), -84px) scale(0.90) rotate(4.5deg); opacity: 1; }
+    40%  { transform: translate(calc(-50% - 64px), -96px) scale(0.98) rotate(1deg); opacity: 1; }
+    50%  { transform: translate(calc(-50% - 80px), -100px) scale(1.00) rotate(-2.5deg); opacity: 1; }
+    60%  { transform: translate(calc(-50% - 96px), -96px) scale(0.98) rotate(-6deg); opacity: 1; }
+    70%  { transform: translate(calc(-50% - 112px), -84px) scale(0.90) rotate(-9.5deg); opacity: 1; }
+    80%  { transform: translate(calc(-50% - 128px), -64px) scale(0.79) rotate(-13deg); opacity: 1; }
+    85%  { opacity: 1; }
+    90%  { transform: translate(calc(-50% - 144px), -36px) scale(0.65) rotate(-16.5deg); opacity: 0.8; }
+    100% { transform: translate(calc(-50% - 160px), 0px) scale(0.50) rotate(-20deg); opacity: 0; }
+  }
   .fishing-ollie {
     position: absolute;
     left: 2%;
@@ -526,6 +587,37 @@
     height: 100%;
     display: block;
     overflow: visible; /* lets the rod/line extend out over the pond */
+  }
+  /* pulses while a fish is actively pulling, as a "click me!" cue */
+  @keyframes bobber-bite-pulse {
+    0%, 100% { filter: drop-shadow(0 0 0 rgba(224, 122, 158, 0)); }
+    50%      { filter: drop-shadow(0 0 7px rgba(224, 122, 158, 0.95)); }
+  }
+  #fishingBobber.bite-active {
+    animation: bobber-bite-pulse 0.55s ease-in-out infinite;
+  }
+  .fishing-catch-msg {
+    position: absolute;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: #fff4e0;
+    border: 3px solid #231a14;
+    border-radius: 14px;
+    padding: 10px 22px;
+    font-family: sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #5c3a1a;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 220;
+    white-space: nowrap;
+  }
+  .fishing-catch-msg.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
   .fishing-back-btn {
     position: absolute;
@@ -903,6 +995,8 @@
     <div class="fishing-water-ripples" id="waterRipples"></div>
   </div>
 
+  <div class="fishing-fish-layer" id="fishLayer"></div>
+
   <div class="fishing-ollie">
     <svg viewBox="0 0 300 400">
       <defs>
@@ -920,10 +1014,11 @@
         <path d="M 265 268 L 265 323" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
         <path d="M 265 268 L 265 323" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
 
-        <!-- resting front paw -->
-        <path d="M 175 145 C 160 165, 150 191, 155 215" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
-        <path d="M 175 145 C 160 165, 150 191, 155 215" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
-        <ellipse cx="155" cy="217" rx="14" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+        <!-- resting front paw (his non-fishing hand), resting just outside
+             his body's silhouette rather than tucked behind it or flung wide -->
+        <path d="M 175 140 C 155 152, 132 175, 136 214" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
+        <path d="M 175 140 C 155 152, 132 175, 136 214" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
+        <ellipse cx="136" cy="216" rx="14" ry="9" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
 
         <!-- body -->
         <ellipse cx="230" cy="192" rx="80" ry="90" fill="#e8944e" stroke="#231a14" stroke-width="7"/>
@@ -941,16 +1036,46 @@
         <!-- head, the exact same art used everywhere else -->
         <use href="#sideHead" transform="translate(-111 -113)"/>
 
-        <!-- raised paw (his "wave" paw at rest), now holding the rod -->
-        <path d="M 285 145 C 305 130, 322 107, 330 79" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round"/>
-        <path d="M 285 145 C 305 130, 322 107, 330 79" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round"/>
-        <ellipse cx="332" cy="76" rx="14" ry="10" fill="#fbe9c9" stroke="#231a14" stroke-width="4"/>
+        <!-- raised paw (his "wave" paw at rest), now holding the rod. its
+             grip flexes a little on each tug (see fishingArmTug below), in
+             the same direction the line gets pulled -->
+        <path id="fishingForearmOutline" d="M 285 145 C 305 130, 322 107, 330 79" stroke="#231a14" stroke-width="22" fill="none" stroke-linecap="round">
+          <animate id="fishingForearmOutlineTug" attributeName="d" begin="indefinite" dur="1.8s"
+            values="M 285 145 C 305 130, 322 107, 330 79;M 285 145 C 305 130, 331 113, 339 85;M 285 145 C 305 130, 319 105, 327 77;M 285 145 C 305 130, 327 110, 335 82;M 285 145 C 305 130, 322 107, 330 79"/>
+        </path>
+        <path id="fishingForearm" d="M 285 145 C 305 130, 322 107, 330 79" stroke="#e8944e" stroke-width="15" fill="none" stroke-linecap="round">
+          <animate id="fishingForearmTug" attributeName="d" begin="indefinite" dur="1.8s"
+            values="M 285 145 C 305 130, 322 107, 330 79;M 285 145 C 305 130, 331 113, 339 85;M 285 145 C 305 130, 319 105, 327 77;M 285 145 C 305 130, 327 110, 335 82;M 285 145 C 305 130, 322 107, 330 79"/>
+        </path>
+        <ellipse id="fishingPaw" cx="332" cy="76" rx="14" ry="10" fill="#fbe9c9" stroke="#231a14" stroke-width="4">
+          <animate id="fishingPawTug" attributeName="cx" begin="indefinite" dur="1.8s" values="332;341;329;337;332"/>
+          <animate id="fishingPawTugY" attributeName="cy" begin="indefinite" dur="1.8s" values="76;82;74;79;76"/>
+        </ellipse>
 
         <!-- fishing rod: angled further out so the line reaches the deeper
-             part of the pond instead of the shallow water near the shore -->
-        <path d="M 332 76 L 392 4" stroke="#5c3a1a" stroke-width="6" fill="none" stroke-linecap="round"/>
-        <path d="M 392 4 L 610 335" stroke="#3a2418" stroke-width="1.5" fill="none"/>
-        <circle cx="610" cy="335" r="6" fill="#e07a9e" stroke="#231a14" stroke-width="2"/>
+             part of the pond instead of the shallow water near the shore.
+             pulls along with the paw when a fish tugs the line -->
+        <path id="fishingRod" d="M 332 76 L 392 4" stroke="#5c3a1a" stroke-width="6" fill="none" stroke-linecap="round">
+          <animate id="fishingRodTug" attributeName="d" begin="indefinite" dur="1.8s"
+            values="M 332 76 L 392 4;M 341 82 L 401 10;M 329 74 L 389 2;M 337 79 L 397 7;M 332 76 L 392 4"/>
+        </path>
+        <path id="fishingLine" d="M 392 4 L 930 345" stroke="#3a2418" stroke-width="1.5" fill="none">
+          <!-- triggered from JS every so often to make it look like a fish
+               has grabbed the line and is pulling it out into deeper water,
+               tugging his arm and rod along with it -->
+          <animate id="fishingLineTug" attributeName="d" begin="indefinite" dur="1.8s"
+            values="M 392 4 L 930 345;M 401 10 L 981 377;M 389 2 L 911 333;M 397 7 L 960 364;M 392 4 L 930 345"/>
+        </path>
+        <circle id="fishingBobber" cx="930" cy="345" r="6" fill="#e07a9e" stroke="#231a14" stroke-width="2">
+          <animate id="fishingBobberTugX" attributeName="cx" begin="indefinite" dur="1.8s" values="930;981;911;960;930"/>
+          <animate id="fishingBobberTugY" attributeName="cy" begin="indefinite" dur="1.8s" values="345;377;333;364;345"/>
+        </circle>
+        <!-- bigger invisible click target over the bobber, since a 6px dot
+             is hard to hit — mirrors the same position as the real bobber -->
+        <circle id="fishingBobberHit" cx="930" cy="345" r="30" fill="transparent" pointer-events="all" style="cursor:pointer;">
+          <animate id="fishingBobberHitTugX" attributeName="cx" begin="indefinite" dur="1.8s" values="930;981;911;960;930"/>
+          <animate id="fishingBobberHitTugY" attributeName="cy" begin="indefinite" dur="1.8s" values="345;377;333;364;345"/>
+        </circle>
 
         <!-- fishing boots -->
         <path d="M 185 290 L 185 306 C 181 310, 180 316, 185 320 C 189 323, 201 323, 205 320 C 210 316, 209 310, 205 306 L 205 290 Z"
@@ -958,8 +1083,9 @@
         <path d="M 255 290 L 255 306 C 251 310, 250 316, 255 320 C 259 323, 271 323, 275 320 C 280 316, 279 310, 275 306 L 275 290 Z"
               fill="#6b7f4e" stroke="#231a14" stroke-width="4" stroke-linejoin="round"/>
 
-        <!-- fishing hat -->
-        <g transform="translate(196 -49)">
+        <!-- fishing hat, scaled up around its brim center so it grows
+             without drifting off the top of his head -->
+        <g transform="translate(196 -49) translate(34 21) scale(1.35) translate(-34 -21)">
           <path d="M 6 20 Q 10 2 34 2 Q 58 2 62 20 Z" fill="#8a5a2b" stroke="#231a14" stroke-width="3" stroke-linejoin="round"/>
           <ellipse cx="34" cy="21" rx="34" ry="6" fill="#a9702f" stroke="#231a14" stroke-width="3"/>
           <path d="M 46 10 L 58 6" stroke="#e07a9e" stroke-width="2"/>
@@ -970,6 +1096,7 @@
   </div>
 
   <button class="fishing-back-btn" id="fishingBackBtn" type="button">← Back to walk</button>
+  <div class="fishing-catch-msg" id="fishingCatchMsg"></div>
 </div>
 
 <script>
@@ -1206,6 +1333,160 @@
   }
 
   setInterval(spawnRipple, 850);
+
+  // ---- fish leaping out of the pond ----
+  const fishLayer = document.getElementById('fishLayer');
+
+  function spawnSplash(xPercent) {
+    const el = document.createElement('div');
+    el.className = 'ripple';
+    el.style.left = xPercent + '%';
+    el.style.top = (82 + Math.random() * 12) + '%';
+    el.addEventListener('animationend', () => el.remove());
+    waterRipples.appendChild(el);
+  }
+
+  const FISH_SVG = '<svg viewBox="-8 0 52 24">' +
+    '<path d="M 8 12 L -6 4 L -6 20 Z" fill="#4f8fb8" stroke="#231a14" stroke-width="2" stroke-linejoin="round"/>' +
+    '<ellipse cx="24" cy="12" rx="14" ry="8" fill="#8fc7e8" stroke="#231a14" stroke-width="2"/>' +
+    '<path d="M 20 6 L 24 -2 L 28 6 Z" fill="#4f8fb8" stroke="#231a14" stroke-width="2" stroke-linejoin="round"/>' +
+    '<circle cx="32" cy="9" r="2" fill="#231a14"/>' +
+    '</svg>';
+
+  // alternate leap direction on every spawn (instead of a coin flip) so
+  // fish reliably jump both left and right, not just whichever way luck
+  // happens to favor in a given stretch
+  let nextLeapIsB = Math.random() < 0.5;
+
+  function spawnFish() {
+    if (!fishingScene.classList.contains('show')) return;
+    const xPercent = 15 + Math.random() * 55;
+    const leapB = nextLeapIsB;
+    nextLeapIsB = !nextLeapIsB;
+    const el = document.createElement('div');
+    el.className = 'leaping-fish' + (leapB ? ' leap-b' : '');
+    el.style.left = xPercent + '%';
+    // face the fish the way it's actually leaping — the outer element's
+    // transform is owned by the jump animation, so the flip lives on a
+    // static inner wrapper instead of conflicting with it
+    el.innerHTML = leapB
+      ? '<div style="width:100%;height:100%;transform:scaleX(-1)">' + FISH_SVG + '</div>'
+      : FISH_SVG;
+    el.addEventListener('animationend', () => el.remove());
+    fishLayer.appendChild(el);
+
+    // the fish drifts sideways over the arc (160px, matching the keyframes),
+    // so the landing splash needs to track where it actually comes back down
+    const layerWidth = fishLayer.offsetWidth || 300;
+    const driftPercent = (160 / layerWidth) * 100 * (leapB ? -1 : 1);
+    const landPercent = Math.min(98, Math.max(2, xPercent + driftPercent));
+
+    spawnSplash(xPercent);
+    setTimeout(() => spawnSplash(landPercent), 1050);
+  }
+
+  setInterval(spawnFish, 2600 + Math.random() * 1800);
+
+  // ---- a fish tugging on Ollie's line every so often, escalating the
+  // longer you wait to click the bobber ----
+  const fishingForearmOutlineTug = document.getElementById('fishingForearmOutlineTug');
+  const fishingForearmTug = document.getElementById('fishingForearmTug');
+  const fishingPawTug = document.getElementById('fishingPawTug');
+  const fishingPawTugY = document.getElementById('fishingPawTugY');
+  const fishingRodTug = document.getElementById('fishingRodTug');
+  const fishingLineTug = document.getElementById('fishingLineTug');
+  const fishingBobberTugX = document.getElementById('fishingBobberTugX');
+  const fishingBobberTugY = document.getElementById('fishingBobberTugY');
+  const fishingBobberHitTugX = document.getElementById('fishingBobberHitTugX');
+  const fishingBobberHitTugY = document.getElementById('fishingBobberHitTugY');
+  const fishingBobber = document.getElementById('fishingBobber');
+  const fishingBobberHit = document.getElementById('fishingBobberHit');
+  const fishingCatchMsg = document.getElementById('fishingCatchMsg');
+
+  const BITE_TUG_DURATION = 1800; // ms, matches each animate's dur="1.8s"
+  const BITE_ESCALATE_STEP = 0.5;
+  const BITE_MAX_MULTIPLIER = 3;
+
+  let biteActive = false;
+  let biteMultiplier = 1;
+  let biteEscalateTimer = null;
+  let catchMsgTimeout = null;
+
+  // base offsets (at multiplier 1) for each of the 5 tug keyframes, sampled
+  // by hand earlier — bigger multiplier just stretches these further
+  const ARM_DX = [0, 9, -3, 5, 0];
+  const ARM_DY = [0, 6, -2, 3, 0];
+  const BOB_DX = [0, 51, -19, 30, 0];
+  const BOB_DY = [0, 32, -12, 19, 0];
+
+  function computeTugValues(m) {
+    const ax = ARM_DX.map(d => Math.round(d * m));
+    const ay = ARM_DY.map(d => Math.round(d * m));
+    const bx = BOB_DX.map(d => Math.round(d * m));
+    const by = BOB_DY.map(d => Math.round(d * m));
+    const forearm = ax.map((dx, i) => `M 285 145 C 305 130, ${322 + dx} ${107 + ay[i]}, ${330 + dx} ${79 + ay[i]}`).join(';');
+    const pawCx = ax.map(dx => 332 + dx).join(';');
+    const pawCy = ay.map(dy => 76 + dy).join(';');
+    const rod = ax.map((dx, i) => `M ${332 + dx} ${76 + ay[i]} L ${392 + dx} ${4 + ay[i]}`).join(';');
+    const line = ax.map((dx, i) => `M ${392 + dx} ${4 + ay[i]} L ${930 + bx[i]} ${345 + by[i]}`).join(';');
+    const bobberCx = bx.map(dx => 930 + dx).join(';');
+    const bobberCy = by.map(dy => 345 + dy).join(';');
+    return { forearm, pawCx, pawCy, rod, line, bobberCx, bobberCy };
+  }
+
+  function applyTug(m) {
+    const v = computeTugValues(m);
+    fishingForearmOutlineTug.setAttribute('values', v.forearm);
+    fishingForearmTug.setAttribute('values', v.forearm);
+    fishingPawTug.setAttribute('values', v.pawCx);
+    fishingPawTugY.setAttribute('values', v.pawCy);
+    fishingRodTug.setAttribute('values', v.rod);
+    fishingLineTug.setAttribute('values', v.line);
+    fishingBobberTugX.setAttribute('values', v.bobberCx);
+    fishingBobberTugY.setAttribute('values', v.bobberCy);
+    fishingBobberHitTugX.setAttribute('values', v.bobberCx);
+    fishingBobberHitTugY.setAttribute('values', v.bobberCy);
+    [fishingForearmOutlineTug, fishingForearmTug, fishingPawTug, fishingPawTugY,
+     fishingRodTug, fishingLineTug, fishingBobberTugX, fishingBobberTugY,
+     fishingBobberHitTugX, fishingBobberHitTugY].forEach(anim => anim.beginElement());
+  }
+
+  function showCatchMessage(text) {
+    fishingCatchMsg.textContent = text;
+    fishingCatchMsg.classList.add('show');
+    clearTimeout(catchMsgTimeout);
+    catchMsgTimeout = setTimeout(() => fishingCatchMsg.classList.remove('show'), 1800);
+  }
+
+  function endBite(caught) {
+    biteActive = false;
+    clearInterval(biteEscalateTimer);
+    fishingBobber.classList.remove('bite-active');
+    showCatchMessage(caught ? 'Got one! 🐟' : 'It got away...');
+  }
+
+  function startBite() {
+    if (!fishingScene.classList.contains('show') || biteActive) return;
+    biteActive = true;
+    biteMultiplier = 1;
+    fishingBobber.classList.add('bite-active');
+    applyTug(biteMultiplier);
+    biteEscalateTimer = setInterval(() => {
+      biteMultiplier = Math.min(BITE_MAX_MULTIPLIER, biteMultiplier + BITE_ESCALATE_STEP);
+      applyTug(biteMultiplier);
+      if (biteMultiplier >= BITE_MAX_MULTIPLIER) {
+        setTimeout(() => { if (biteActive) endBite(false); }, BITE_TUG_DURATION);
+      }
+    }, BITE_TUG_DURATION);
+  }
+
+  fishingBobberHit.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!biteActive) return;
+    endBite(true);
+  });
+
+  setInterval(startBite, 6000 + Math.random() * 4000);
 
   const ACTION_DURATION = { food: 3000, post: 2800, toy: 3500 };
   const ARRIVAL_GAP = { sign: 130 }; // how far short of the prop he stops, in px
