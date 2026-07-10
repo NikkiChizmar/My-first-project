@@ -1823,12 +1823,18 @@
 
   requestAnimationFrame(frame);
 
-  // ---- seasons: after he's been walking a while, things start turning
-  // fall — new trees come in fall colors and leaf piles start showing up
-  // on the grass. trees/piles already passed stay as they were. ----
-  const SEASON_FALL_DELAY = 30000; // ms of walking before fall starts
-  let seasonIsFall = false;
-  setTimeout(() => { seasonIsFall = true; }, SEASON_FALL_DELAY);
+  // ---- seasons: after he's been walking a while, things gradually turn
+  // fall — a fall tree or leaf pile sprinkled in here and there at first,
+  // getting more common the longer he walks, until it's fully fall.
+  // trees/piles already placed stay as they were. ----
+  const SEASON_FALL_START = 15000; // ms before fall colors start sprinkling in
+  const SEASON_FALL_FULL = 90000;  // ms before it's fully fall
+  const pageLoadTime = Date.now();
+
+  function seasonProgress() {
+    const elapsed = Date.now() - pageLoadTime;
+    return Math.max(0, Math.min(1, (elapsed - SEASON_FALL_START) / (SEASON_FALL_FULL - SEASON_FALL_START)));
+  }
 
   // ---- background trees, scrolling past as he walks ----
   const treeLayer = document.getElementById('treeLayer');
@@ -1849,7 +1855,9 @@
     // tall, narrow silhouette (viewBox is much taller than it is wide) so
     // scaling it up makes it reach toward the clouds without getting
     // comically fat
-    const palette = seasonIsFall ? TREE_FALL_COLORS : TREE_GREENS;
+    // odds of any given new tree being a fall tree ramp up gradually — a
+    // rare one sprinkled in early on, most of them by the time it's "full fall"
+    const palette = Math.random() < seasonProgress() ? TREE_FALL_COLORS : TREE_GREENS;
     const color = palette[Math.floor(Math.random() * palette.length)];
     const w = Math.round(60 * scale), h = Math.round(220 * scale);
     return `
@@ -1893,44 +1901,66 @@
 
   // ---- leaf piles on the grass, once it's turned fall ----
   const leafPileLayer = document.getElementById('leafPileLayer');
-  const LEAF_MIN_GAP = 220;
-  const LEAF_MAX_GAP = 420;
   const LEAF_AHEAD_BUFFER = 300;
   let leafPiles = [];
   let nextLeafWorldX = null; // set once fall starts, so piles begin appearing from that point on
 
+  const LEAF_PILE_COLORS = ['#e0943f', '#c1522c', '#8a3a2f', '#8a9a4a', '#e8b23f', '#d9942f'];
+
+  // a mound built from a bunch of individual leaf shapes (each a simple
+  // pointed almond with a center vein), stacked wide-at-the-base tapering
+  // up into a rounded triangle — like a proper pile of leaves, not just a
+  // few overlapping blobs
+  const LEAF_PILE_LAYOUT = [
+    [6, 30, -20, 1.0], [16, 29, 10, 1.1], [26, 30, -8, 0.95], [36, 29, 18, 1.05], [46, 30, -15, 1.0], [54, 29, 22, 0.9],
+    [11, 22, 25, 1.0], [20, 20, -18, 1.1], [30, 21, 5, 1.0], [40, 20, -22, 1.05], [49, 22, 15, 0.95],
+    [17, 13, -12, 0.95], [26, 11, 20, 1.0], [35, 13, -6, 0.9], [43, 14, 14, 0.9],
+    [24, 5, 8, 0.85], [32, 4, -15, 0.85]
+  ];
+
   function leafPileSVG(scale) {
-    const w = Math.round(50 * scale), h = Math.round(22 * scale);
-    return `
-      <svg viewBox="0 0 50 22" width="${w}" height="${h}">
-        <ellipse cx="25" cy="17" rx="22" ry="5" fill="#8a4a1f" opacity="0.35"/>
-        <ellipse cx="16" cy="13" rx="7" ry="4.5" fill="#e0943f" transform="rotate(-15 16 13)"/>
-        <ellipse cx="27" cy="10" rx="7" ry="4.5" fill="#c1522c" transform="rotate(10 27 10)"/>
-        <ellipse cx="34" cy="14" rx="6" ry="4" fill="#e8b23f" transform="rotate(-8 34 14)"/>
-        <ellipse cx="20" cy="16" rx="6" ry="4" fill="#d9942f" transform="rotate(6 20 16)"/>
-      </svg>`;
+    const w = Math.round(60 * scale), h = Math.round(34 * scale);
+    const leaves = LEAF_PILE_LAYOUT.map(([x, y, rot, sc], i) => {
+      const color = LEAF_PILE_COLORS[i % LEAF_PILE_COLORS.length];
+      return `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${sc})">
+          <path d="M 0 -8 C 5 -5 5 4 0 9 C -5 4 -5 -5 0 -8 Z" fill="${color}" stroke="#231a14" stroke-width="0.8"/>
+          <path d="M 0 -6 L 0 6" stroke="#00000040" stroke-width="0.8"/>
+        </g>`;
+    }).join('');
+    return `<svg viewBox="0 0 60 34" width="${w}" height="${h}">${leaves}</svg>`;
   }
 
   function spawnLeafPile(worldX) {
     const el = document.createElement('div');
     el.className = 'leaf-pile';
-    const scale = 0.9 + Math.random() * 0.6;
+    const scale = 1.5 + Math.random() * 1.4;
     el.innerHTML = leafPileSVG(scale);
     leafPileLayer.appendChild(el);
     leafPiles.push({ worldX, el });
   }
 
   function updateLeafPiles() {
-    if (!seasonIsFall) return;
+    const progress = seasonProgress();
+    if (progress <= 0) return;
     if (nextLeafWorldX === null) {
-      // start placing piles from just ahead of him, the moment fall begins
+      // start considering spots for piles from just ahead of him, the
+      // moment fall starts sprinkling in
       nextLeafWorldX = scrollOffset + 200;
     }
     const stageWidth = stage.getBoundingClientRect().width;
     const aheadEdge = scrollOffset + stageWidth + LEAF_AHEAD_BUFFER;
     while (nextLeafWorldX < aheadEdge) {
-      spawnLeafPile(nextLeafWorldX);
-      nextLeafWorldX += LEAF_MIN_GAP + Math.random() * (LEAF_MAX_GAP - LEAF_MIN_GAP);
+      // only some spots actually get a pile — more of them do as it gets
+      // further into fall, so they show up sparse at first, then everywhere
+      if (Math.random() < progress) {
+        spawnLeafPile(nextLeafWorldX);
+      }
+      // irregular gaps instead of a steady rhythm: often the next spot is
+      // right nearby (little clusters/clumps of leaves), sometimes it's a
+      // long stretch of bare grass before the next one
+      nextLeafWorldX += Math.random() < 0.4
+        ? 45 + Math.random() * 100
+        : 260 + Math.random() * 420;
     }
 
     for (let i = leafPiles.length - 1; i >= 0; i--) {
